@@ -39,7 +39,7 @@ dependencies {
     shadow(gradleKotlinDsl())
 
     // Dokka dependencies
-    val dokkaVersion = "2.0.0-Beta"
+    val dokkaVersion = "2.0.0"
     shadow("org.jetbrains.dokka:analysis-kotlin-symbols:$dokkaVersion")
     shadow("org.jetbrains.dokka:dokka-base:$dokkaVersion")
     shadow("org.jetbrains.dokka:dokka-core:$dokkaVersion")
@@ -60,11 +60,10 @@ tasks.withType(ShadowJar::class) {
 }
 
 gradlePlugin {
-    website = "https://github.com/Jolanrensen/docProcessorGradlePlugin"
-    vcsUrl = "https://github.com/Jolanrensen/docProcessorGradlePlugin"
-    // Define the plugin
-    val docProcessor by plugins.creating {
-        id = "nl.jolanrensen.docProcessor"
+    website = "https://github.com/Jolanrensen/KoDEx"
+    vcsUrl = "https://github.com/Jolanrensen/KoDEx"
+
+    fun PluginDeclaration.commonConfig() {
         displayName = "/** KoDEx */: Kotlin Documentation Extensions"
         description = "/** KoDEx */: Kotlin Documentation Extensions"
         tags = listOf(
@@ -88,6 +87,18 @@ gradlePlugin {
             "tag-processor",
         )
         implementationClass = "nl.jolanrensen.docProcessor.gradle.DocProcessorPlugin"
+    }
+
+    // Deprecated: Will be deprecated in favor of nl.jolanrensen.kodex
+    val docProcessor by plugins.creating {
+        commonConfig()
+        description = "Deprecated: Will be deprecated in favor of nl.jolanrensen.kodex"
+        id = "nl.jolanrensen.docProcessor"
+    }
+
+    val kodex by plugins.creating {
+        commonConfig()
+        id = "nl.jolanrensen.kodex"
     }
 }
 
