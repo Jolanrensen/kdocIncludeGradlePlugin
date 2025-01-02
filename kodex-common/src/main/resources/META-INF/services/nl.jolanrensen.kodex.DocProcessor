@@ -1,0 +1,10 @@
+nl.jolanrensen.kodex.defaultProcessors.IncludeDocProcessor
+nl.jolanrensen.kodex.defaultProcessors.NoDocProcessor
+nl.jolanrensen.kodex.defaultProcessors.TodoDocProcessor
+nl.jolanrensen.kodex.defaultProcessors.SampleDocProcessor
+nl.jolanrensen.kodex.defaultProcessors.ExampleDocProcessor
+nl.jolanrensen.kodex.defaultProcessors.IncludeFileDocProcessor
+nl.jolanrensen.kodex.defaultProcessors.CommentDocProcessor
+nl.jolanrensen.kodex.defaultProcessors.ExportAsHtmlDocProcessor
+nl.jolanrensen.kodex.defaultProcessors.ArgDocProcessor
+nl.jolanrensen.kodex.defaultProcessors.RemoveEscapeCharsProcessor

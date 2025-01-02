@@ -13,7 +13,7 @@ plugins {
     id("org.jlleitschuh.gradle.ktlint")
 }
 
-group = "nl.jolanrensen.docProcessor"
+group = "nl.jolanrensen.kodex"
 version = "0.4.0-SNAPSHOT"
 
 publishing {
@@ -56,7 +56,7 @@ tasks.withType(ShadowJar::class) {
     archiveClassifier = ""
 
     // Avoid clashes with org.jetbrains:markdown-jvm:0.6.1 in :common
-    relocate("org.intellij.markdown", "nl.jolanrensen.docProcessor.markdown")
+    relocate("org.intellij.markdown", "nl.jolanrensen.kodex.markdown")
 }
 
 gradlePlugin {
@@ -86,7 +86,7 @@ gradlePlugin {
             "tag",
             "tag-processor",
         )
-        implementationClass = "nl.jolanrensen.docProcessor.gradle.DocProcessorPlugin"
+        implementationClass = "nl.jolanrensen.kodex.gradle.DocProcessorPlugin"
     }
 
     // Deprecated: Will be deprecated in favor of nl.jolanrensen.kodex

@@ -11,7 +11,7 @@ plugins {
     id("org.jlleitschuh.gradle.ktlint")
 }
 
-group = "nl.jolanrensen.docProcessor"
+group = "nl.jolanrensen.kodex"
 version = "0.4.0-SNAPSHOT"
 
 repositories {
