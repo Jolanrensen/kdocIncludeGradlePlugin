@@ -32,7 +32,7 @@ repositories {
 }
 
 dependencies {
-    api(project(":doc-processor-common"))
+    api(project(":kodex-common"))
 
     // Gradle plugin dependencies
     shadow(gradleApi())
@@ -65,9 +65,10 @@ gradlePlugin {
     // Define the plugin
     val docProcessor by plugins.creating {
         id = "nl.jolanrensen.docProcessor"
-        displayName = "KDoc/Javadoc processor Gradle Plugin"
-        description = "KDoc/Javadoc processor Gradle Plugin"
+        displayName = "/** KoDEx */: Kotlin Documentation Extensions"
+        description = "/** KoDEx */: Kotlin Documentation Extensions"
         tags = listOf(
+            "kodex",
             "kotlin",
             "java",
             "documentation",

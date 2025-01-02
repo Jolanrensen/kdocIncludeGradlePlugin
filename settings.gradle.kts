@@ -1,8 +1,8 @@
-rootProject.name = "doc-processor-gradle-plugin"
+rootProject.name = "KoDEx"
 
-include("doc-processor-common")
-include("doc-processor-gradle-plugin")
-include("doc-processor-intellij-plugin")
+include("kodex-common")
+include("kodex-gradle-plugin")
+include("kodex-intellij-plugin")
 
 pluginManagement {
     repositories {

@@ -25,5 +25,5 @@ hs_err_pid*
 **/build/
 /build/
 /.idea/
-/kodex-gradle-plugin/src/functionalTest/resources/dataframe/**
+/kodex-gradle-plugin/src/functionalTest/resources/dataframe/
 .intellijPlatform

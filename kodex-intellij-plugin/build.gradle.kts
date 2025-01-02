@@ -41,7 +41,7 @@ intellijPlatform {
 }
 
 dependencies {
-    api(project(":doc-processor-common"))
+    api(project(":kodex-common"))
 
     // Use JUnit test framework for unit tests
     testImplementation(kotlin("test"))
