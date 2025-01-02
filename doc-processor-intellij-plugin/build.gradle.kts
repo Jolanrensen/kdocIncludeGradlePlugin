@@ -32,7 +32,7 @@ repositories {
 
 intellijPlatform {
     pluginConfiguration {
-        name = "DocProcessor"
+        name = "/** KoDEx */: Kotlin Documentation Extensions"
         ideaVersion {
             sinceBuild = "231"
             untilBuild = "243.*"
