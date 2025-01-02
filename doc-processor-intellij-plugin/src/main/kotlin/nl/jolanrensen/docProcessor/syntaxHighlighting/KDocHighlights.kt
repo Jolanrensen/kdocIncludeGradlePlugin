@@ -6,6 +6,7 @@ import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.editor.DefaultLanguageHighlighterColors
 import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.editor.colors.CodeInsightColors
 import com.intellij.openapi.editor.colors.EditorColorsManager
 import com.intellij.openapi.editor.event.CaretEvent
 import com.intellij.openapi.editor.event.CaretListener
@@ -136,16 +137,18 @@ class KDocHighlightListener private constructor(private val editor: Editor) :
                 }
             } ?: return
 
+            val highlightAttributes = scheme.getAttributes(CodeInsightColors.MATCHED_BRACE_ATTRIBUTES)
+                .clone()
+                .apply {
+                    fontType = Font.BOLD + Font.ITALIC
+                }
+
             for (it in toHighlight) {
                 highlighters += markupModel.addRangeHighlighter(
                     /* startOffset = */ kdocStart + it.range.first,
                     /* endOffset = */ kdocStart + it.range.last + 1,
                     /* layer = */ HighlighterLayer.SELECTION + 100,
-                    // textAttributes =
-                    textAttributesFor(it.type).apply {
-                        effectType = EffectType.BOXED
-                        effectColor = scheme.defaultForeground
-                    },
+                    /* textAttributes = */ highlightAttributes,
                     /* targetArea = */ HighlighterTargetArea.EXACT_RANGE,
                 )
             }
