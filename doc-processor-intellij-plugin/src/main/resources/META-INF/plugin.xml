@@ -1,21 +1,21 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
     <id>nl.jolanrensen.docProcessor</id>
-    <name>KDoc/JavaDoc Processor</name>
+    <name>/** KoDEx */: Kotlin Documentation Extensions</name>
     <vendor>Jolan Rensen</vendor>
     <description><![CDATA[
-    IntelliJ plugin counterpart for <a href="https://github.com/Jolanrensen/docProcessorGradlePlugin">KDoc / JavaDoc Preprocessor Gradle Plugin<a/>.<br>
+    IntelliJ plugin counterpart for <a href="https://github.com/Jolanrensen/docProcessorGradlePlugin">KoDEx<a/>.<br>
     This can be considered an alpha version.<br>
     For now, the order of default processors is unconfigurable, but this will be added in the future.<br>
     The order is like the recommended order:
     <ul>
-      <li>INCLUDE_DOC_PROCESSOR: The @include processor</li>
-      <li>INCLUDE_FILE_DOC_PROCESSOR: The @includeFile processor</li>
-      <li>ARG_DOC_PROCESSOR: The @set and @get / $ processor. This runs @set first and then @get / $.</li>
-      <li>COMMENT_DOC_PROCESSOR: The @comment processor</li>
-      <li>SAMPLE_DOC_PROCESSOR: The @sample and @sampleNoComments processor</li>
-      <li>EXPORT_AS_HTML_DOC_PROCESSOR: The @exportAsHtmlStart and @exportAsHtmlEnd tags for @ExportAsHtml</li>
-      <li>REMOVE_ESCAPE_CHARS_PROCESSOR: The processor that removes escape characters</li>
+      <li><code>INCLUDE_DOC_PROCESSOR</code>: The <code>@include</code> processor</li>
+      <li><code>INCLUDE_FILE_DOC_PROCESSOR</code>: The <code>@includeFile</code> processor</li>
+      <li><code>ARG_DOC_PROCESSOR</code>: The <code>@set</code> and <code>@get</code> / <code>$</code> processor. This runs <code>@set</code> first and then <code>@get</code> / <code>$</code></li>
+      <li><code>COMMENT_DOC_PROCESSOR</code>: The <code>@comment</code> processor</li>
+      <li><code>SAMPLE_DOC_PROCESSOR</code>: The <code>@sample</code> and <code>@sampleNoComments</code> processor</li>
+      <li><code>EXPORT_AS_HTML_DOC_PROCESSOR</code>: The <code>@exportAsHtmlStart</code> and <code>@exportAsHtmlEnd</code> tags for <code>@ExportAsHtml</code></li>
+      <li><code>REMOVE_ESCAPE_CHARS_PROCESSOR</code>: The processor that removes escape characters</li>
     </ul>
     The plugin works both in K1 and K2 mode of the IDE, but should be turned off when viewing the sources of
     libraries or when inside a Kotlin notebooks.
@@ -30,10 +30,10 @@
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow
             factoryClass="nl.jolanrensen.docProcessor.toolWindow.DocProcessorToolWindowFactory"
-            icon="com.intellij.icons.ExpUiIcons.Gutter.JavadocRead"
-            id="Doc Preprocessor"/>
+            icon="/icons/KoDEx-K-toolWindow.svg"
+            id="KoDEx Settings"/>
 
-        <!-- K1 -->
+        <!-- K1 kdoc rendering -->
 
         <documentationProvider
             implementation="nl.jolanrensen.docProcessor.documentationProvider.DocProcessorDocumentationProviderK1"
@@ -50,17 +50,12 @@
             id="DocProcessorJava"
             order="first"/>
 
-        <!-- K2 -->
+        <!-- K2 kdoc rendering -->
 
         <platform.backend.documentation.psiTargetProvider
             id="DocProcessorPsiDocumentationTargetProvider"
             order="first"
             implementation="nl.jolanrensen.docProcessor.documentationProvider.DocProcessorPsiDocumentationTargetProvider"/>
-
-        <!--        <platform.backend.documentation.targetProvider-->
-        <!--            id="DocProcessorDocumentationTargetProvider"-->
-        <!--            order="first"-->
-        <!--            implementation="nl.jolanrensen.docProcessor.documentationProvider.DocProcessorDocumentationTargetProvider"/>-->
 
         <platform.backend.documentation.inlineDocumentationProvider
             id="DocProcessorInlineDocumentationProvider"
@@ -74,6 +69,26 @@
             id="DocProcessorK2"
             order="first"/>
 
+        <!-- Highlighting -->
+        <annotator language="kotlin"
+                   implementationClass="nl.jolanrensen.docProcessor.syntaxHighlighting.KDocHighlightAnnotator"
+                   id="KDocHighlightAnnotator"
+                   order="first"/>
+
+        <annotator language="kotlin"
+                   implementationClass="nl.jolanrensen.docProcessor.syntaxHighlighting.ExportAsHtmlAnnotator"
+                   id="ExportAsHtmlAnnotator"
+                   order="first"/>
+
+        <!-- Completion -->
+        <completion.contributor
+            language="kotlin"
+            implementationClass="nl.jolanrensen.docProcessor.completion.KDocCompletionContributor"
+            id="DocProcessorCompletionContributor"
+            order="first"/>
+
+        <typedHandler implementation="nl.jolanrensen.docProcessor.completion.KDocCompletionInvoker"
+                      order="first"/>
     </extensions>
 
     <extensions defaultExtensionNs="org.jetbrains.kotlin">
