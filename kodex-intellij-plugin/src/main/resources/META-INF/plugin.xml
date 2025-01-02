@@ -1,10 +1,10 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
-    <id>nl.jolanrensen.docProcessor</id>
+    <id>nl.jolanrensen.kodex</id>
     <name>/** KoDEx */: Kotlin Documentation Extensions</name>
     <vendor>Jolan Rensen</vendor>
     <description><![CDATA[
-    IntelliJ plugin counterpart for <a href="https://github.com/Jolanrensen/docProcessorGradlePlugin">KoDEx<a/>.<br>
+    IntelliJ plugin counterpart for <a href="https://github.com/Jolanrensen/KoDEx">KoDEx<a/>.<br>
     This can be considered an alpha version.<br>
     For now, the order of default processors is unconfigurable, but this will be added in the future.<br>
     The order is like the recommended order:
@@ -29,24 +29,24 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow
-            factoryClass="nl.jolanrensen.docProcessor.toolWindow.DocProcessorToolWindowFactory"
+            factoryClass="nl.jolanrensen.kodex.toolWindow.DocProcessorToolWindowFactory"
             icon="/icons/KoDEx-K-toolWindow.svg"
             id="KoDEx Settings"/>
 
         <!-- K1 kdoc rendering -->
 
         <documentationProvider
-            implementation="nl.jolanrensen.docProcessor.documentationProvider.DocProcessorDocumentationProviderK1"
+            implementation="nl.jolanrensen.kodex.documentationProvider.DocProcessorDocumentationProviderK1"
             id="DocProcessor"
             order="first"/>
         <lang.documentationProvider
             language="kotlin"
-            implementationClass="nl.jolanrensen.docProcessor.documentationProvider.DocProcessorDocumentationProviderK1"
+            implementationClass="nl.jolanrensen.kodex.documentationProvider.DocProcessorDocumentationProviderK1"
             id="DocProcessor"
             order="first"/>
         <lang.documentationProvider
             language="JAVA"
-            implementationClass="nl.jolanrensen.docProcessor.documentationProvider.DocProcessorDocumentationProviderK1"
+            implementationClass="nl.jolanrensen.kodex.documentationProvider.DocProcessorDocumentationProviderK1"
             id="DocProcessorJava"
             order="first"/>
 
@@ -55,39 +55,39 @@
         <platform.backend.documentation.psiTargetProvider
             id="DocProcessorPsiDocumentationTargetProvider"
             order="first"
-            implementation="nl.jolanrensen.docProcessor.documentationProvider.DocProcessorPsiDocumentationTargetProvider"/>
+            implementation="nl.jolanrensen.kodex.documentationProvider.DocProcessorPsiDocumentationTargetProvider"/>
 
         <platform.backend.documentation.inlineDocumentationProvider
             id="DocProcessorInlineDocumentationProvider"
             order="first"
-            implementation="nl.jolanrensen.docProcessor.documentationProvider.DocProcessorInlineDocumentationProvider"/>
+            implementation="nl.jolanrensen.kodex.documentationProvider.DocProcessorInlineDocumentationProvider"/>
 
         <!-- Issue #54 -->
         <lang.documentationProvider
             language="kotlin"
-            implementationClass="nl.jolanrensen.docProcessor.documentationProvider.DocProcessorDocumentationProvider"
+            implementationClass="nl.jolanrensen.kodex.documentationProvider.DocProcessorDocumentationProvider"
             id="DocProcessorK2"
             order="first"/>
 
         <!-- Highlighting -->
         <annotator language="kotlin"
-                   implementationClass="nl.jolanrensen.docProcessor.syntaxHighlighting.KDocHighlightAnnotator"
+                   implementationClass="nl.jolanrensen.kodex.syntaxHighlighting.KDocHighlightAnnotator"
                    id="KDocHighlightAnnotator"
                    order="first"/>
 
         <annotator language="kotlin"
-                   implementationClass="nl.jolanrensen.docProcessor.syntaxHighlighting.ExportAsHtmlAnnotator"
+                   implementationClass="nl.jolanrensen.kodex.syntaxHighlighting.ExportAsHtmlAnnotator"
                    id="ExportAsHtmlAnnotator"
                    order="first"/>
 
         <!-- Completion -->
         <completion.contributor
             language="kotlin"
-            implementationClass="nl.jolanrensen.docProcessor.completion.KDocCompletionContributor"
+            implementationClass="nl.jolanrensen.kodex.completion.KDocCompletionContributor"
             id="DocProcessorCompletionContributor"
             order="first"/>
 
-        <typedHandler implementation="nl.jolanrensen.docProcessor.completion.KDocCompletionInvoker"
+        <typedHandler implementation="nl.jolanrensen.kodex.completion.KDocCompletionInvoker"
                       order="first"/>
     </extensions>
 
