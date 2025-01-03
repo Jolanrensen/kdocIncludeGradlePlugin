@@ -2,8 +2,24 @@ package nl.jolanrensen.kodex
 
 import com.intellij.openapi.util.TextRange
 import io.github.oshai.kotlinlogging.KotlinLogging
+import nl.jolanrensen.kodex.annotations.ExcludeFromSources
+import nl.jolanrensen.kodex.annotations.ExportAsHtml
+import nl.jolanrensen.kodex.docContent.DocContent
+import nl.jolanrensen.kodex.docContent.toDocText
+import nl.jolanrensen.kodex.documentableWrapper.DocumentableWrapper
+import nl.jolanrensen.kodex.documentableWrapper.getDocContentForHtmlRange
 import nl.jolanrensen.kodex.gradle.ProcessDocsGradleAction
 import nl.jolanrensen.kodex.gradle.lifecycle
+import nl.jolanrensen.kodex.html.renderToHtml
+import nl.jolanrensen.kodex.processor.findProcessors
+import nl.jolanrensen.kodex.query.DocumentablesByPath
+import nl.jolanrensen.kodex.utils.fullyQualifiedExtensionPath
+import nl.jolanrensen.kodex.utils.fullyQualifiedPath
+import nl.jolanrensen.kodex.utils.indexOfFirstOrNullWhile
+import nl.jolanrensen.kodex.utils.indexOfLastOrNullWhile
+import nl.jolanrensen.kodex.utils.replaceNonOverlappingRanges
+import nl.jolanrensen.kodex.utils.toIntRange
+import nl.jolanrensen.kodex.utils.toTextRange
 import org.jetbrains.dokka.CoreExtensions
 import org.jetbrains.dokka.DokkaBootstrapImpl
 import org.jetbrains.dokka.DokkaConfigurationImpl

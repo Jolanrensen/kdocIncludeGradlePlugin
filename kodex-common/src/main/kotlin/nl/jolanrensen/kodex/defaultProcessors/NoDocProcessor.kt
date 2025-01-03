@@ -1,9 +1,9 @@
 package nl.jolanrensen.kodex.defaultProcessors
 
-import nl.jolanrensen.kodex.DocProcessor
-import nl.jolanrensen.kodex.DocumentablesByPath
-import nl.jolanrensen.kodex.asDocContent
-import nl.jolanrensen.kodex.toDocumentablesByPath
+import nl.jolanrensen.kodex.processor.DocProcessor
+import nl.jolanrensen.kodex.query.DocumentablesByPath
+import nl.jolanrensen.kodex.docContent.asDocContent
+import nl.jolanrensen.kodex.query.toDocumentablesByPath
 
 /**
  * @see NoDocProcessor

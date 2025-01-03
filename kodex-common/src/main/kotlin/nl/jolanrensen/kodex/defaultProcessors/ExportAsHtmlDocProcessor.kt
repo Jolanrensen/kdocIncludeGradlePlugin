@@ -1,10 +1,10 @@
 package nl.jolanrensen.kodex.defaultProcessors
 
-import nl.jolanrensen.kodex.CompletionInfo
-import nl.jolanrensen.kodex.DocumentableWrapper
-import nl.jolanrensen.kodex.MutableDocumentableWrapper
-import nl.jolanrensen.kodex.TagDocProcessor
-import nl.jolanrensen.kodex.getTagNameOrNull
+import nl.jolanrensen.kodex.intellij.CompletionInfo
+import nl.jolanrensen.kodex.documentableWrapper.DocumentableWrapper
+import nl.jolanrensen.kodex.documentableWrapper.MutableDocumentableWrapper
+import nl.jolanrensen.kodex.processor.TagDocProcessor
+import nl.jolanrensen.kodex.utils.getTagNameOrNull
 
 /**
  * @see ExportAsHtmlDocProcessor

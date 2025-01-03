@@ -27,7 +27,7 @@ class PluginExtensionTest : DocProcessorFunctionalTest("extension") {
     @Language("kts")
     private val buildFile: String = """
         plugins {  
-            kotlin("jvm") version "1.9.21"
+            kotlin("jvm") version "2.1.0"
             id("com.vanniktech.maven.publish") version "0.22.0"
         }
 
@@ -50,20 +50,20 @@ class PluginExtensionTest : DocProcessorFunctionalTest("extension") {
     private val extensionPlugin = """
         package nl.jolanrensen.extension
 
-        import nl.jolanrensen.kodex.*
+        import nl.jolanrensen.kodex.docContent.*
+        import nl.jolanrensen.kodex.processor.*
+        import nl.jolanrensen.kodex.query.*
         
         class Extension : DocProcessor() {
         
-            override fun process(
-                processLimit: Int,
-                documentablesByPath: DocumentablesByPath,
-            ): DocumentablesByPath =
+            override fun process(processLimit: Int, documentablesByPath: DocumentablesByPath): DocumentablesByPath =
                 documentablesByPath.documentablesToProcess.map { (path, v) ->
                     path to v.map {
                         it.copy(
-                            docContent = it.docContent
+                            docContent = it.docContent.value
                                 .replace('e', 'a')
-                                .replace('E', 'A'),
+                                .replace('E', 'A')
+                                .asDocContent(),
                             isModified = true,
                         )
                     }
@@ -90,7 +90,7 @@ class PluginExtensionTest : DocProcessorFunctionalTest("extension") {
                     content = extensionPlugin,
                 ),
                 AdditionalFile(
-                    relativePath = "src/main/resources/META-INF/services/nl.jolanrensen.kodex.DocProcessor",
+                    relativePath = "src/main/resources/META-INF/services/nl.jolanrensen.kodex.processor.DocProcessor",
                     content = "nl.jolanrensen.extension.Extension",
                 ),
             ),

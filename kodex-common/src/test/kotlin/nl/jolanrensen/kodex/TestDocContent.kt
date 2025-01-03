@@ -1,6 +1,12 @@
 package nl.jolanrensen.kodex
 
 import io.kotest.matchers.shouldBe
+import nl.jolanrensen.kodex.docContent.asDocContent
+import nl.jolanrensen.kodex.docContent.asDocText
+import nl.jolanrensen.kodex.docContent.asDocTextOrNull
+import nl.jolanrensen.kodex.docContent.getDocContent
+import nl.jolanrensen.kodex.docContent.getDocContentWithMap
+import nl.jolanrensen.kodex.docContent.toDocText
 import org.junit.jupiter.api.Test
 
 class TestDocContent {

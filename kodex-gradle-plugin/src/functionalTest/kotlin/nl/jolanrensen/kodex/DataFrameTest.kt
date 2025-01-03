@@ -31,7 +31,7 @@ class DataFrameTest : DocProcessorFunctionalTest("df") {
     fun `build DataFrame`() {
         GradleRunner.create()
             .forwardOutput()
-            .withArguments("clean", "core:processKDocsMain")
+            .withArguments("clean", "processKDocsMain")
             .withProjectDir(dfProjectDirectory)
             .withDebug(true)
             .build()

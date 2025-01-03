@@ -1,8 +1,8 @@
 package nl.jolanrensen.kodex.services
 
-import nl.jolanrensen.kodex.DocAnalyser
-import nl.jolanrensen.kodex.DocumentablesByPath
-import nl.jolanrensen.kodex.DocumentablesByPathWithCache
+import nl.jolanrensen.kodex.processor.DocAnalyser
+import nl.jolanrensen.kodex.query.DocumentablesByPath
+import nl.jolanrensen.kodex.query.DocumentablesByPathWithCache
 
 class PostIncludeDocProcessorCacheCollector(private val cacheHolder: DocumentablesByPathWithCache) :
     DocAnalyser<Unit>() {

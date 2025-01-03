@@ -75,7 +75,7 @@ The sky is the limit :)
 
 If you want to exclude any annotatable element from the `sources.jar`. 
 Create an annotation class named exactly "`ExcludeFromSources`" 
-(you can copy the code from [here](./kodex-common/src/main/kotlin/nl/jolanrensen/kodex/ExcludeFromSources.kt))
+(you can copy the code from [here](./kodex-common/src/main/kotlin/nl/jolanrensen/kodex/annotations/ExcludeFromSources.kt))
 and annotate the elements you want to exclude with it.
 This is especially useful for "temporary" documentation interfaces, only there
 to provide documentation for other elements.
@@ -427,11 +427,14 @@ Let's create a small example processor:
 ```kotlin
 package com.example.plugin
 
+import nl.jolanrensen.kodex.documentableWrapper.DocumentableWrapper
+import nl.jolanrensen.kodex.processor.TagDocProcessor
+import nl.jolanrensen.kodex.utils.getTagArguments
+
 class ExampleDocProcessor : TagDocProcessor() {
 
     /** We'll intercept @example tags. */
-    override fun tagIsSupported(tag: String): Boolean =
-        tag == "example"
+    override val providesTags: Set<String> = setOf("example")
 
     /** How `{@inner tags}` are processed. */
     override fun processInlineTagWithContent(
@@ -473,7 +476,7 @@ class ExampleDocProcessor : TagDocProcessor() {
 ```
 
 For the processor to be detectable, we need to add it to the
-`src/main/resources/META-INF/services/nl.jolanrensen.kodex.DocProcessor` file:
+`src/main/resources/META-INF/services/nl.jolanrensen.kodex.processor.DocProcessor` file:
 
 ```
 com.example.plugin.ExampleDocProcessor
@@ -512,7 +515,7 @@ fun main() {
 
 See the `defaultProcessor` folder in the project for more examples!
 
-## IntelliJ Plugin (Alpha)
+## IntelliJ Plugin (Beta)
 
 Aside from a Gradle plugin, the project also contains an IntelliJ plugin that allows you to preview the rendered
 documentation directly in the IDE.

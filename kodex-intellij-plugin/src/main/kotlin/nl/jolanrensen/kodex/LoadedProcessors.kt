@@ -9,6 +9,8 @@ import nl.jolanrensen.kodex.defaultProcessors.INCLUDE_DOC_PROCESSOR_PRE_SORT
 import nl.jolanrensen.kodex.defaultProcessors.INCLUDE_FILE_DOC_PROCESSOR
 import nl.jolanrensen.kodex.defaultProcessors.REMOVE_ESCAPE_CHARS_PROCESSOR
 import nl.jolanrensen.kodex.defaultProcessors.SAMPLE_DOC_PROCESSOR
+import nl.jolanrensen.kodex.processor.DocProcessor
+import nl.jolanrensen.kodex.processor.findProcessors
 
 fun ClassLoader.getLoadedProcessors(): List<DocProcessor> {
     Thread.currentThread().contextClassLoader = this

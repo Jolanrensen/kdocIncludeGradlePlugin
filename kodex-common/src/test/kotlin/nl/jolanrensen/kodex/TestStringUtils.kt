@@ -1,6 +1,13 @@
 package nl.jolanrensen.kodex
 
 import io.kotest.matchers.shouldBe
+import nl.jolanrensen.kodex.docContent.asDocContent
+import nl.jolanrensen.kodex.docContent.replaceKdocLinks
+import nl.jolanrensen.kodex.utils.indexOfFirstOrNullWhile
+import nl.jolanrensen.kodex.utils.indexOfLastOrNullWhile
+import nl.jolanrensen.kodex.utils.lastIndexOfNot
+import nl.jolanrensen.kodex.utils.removeEscapeCharacters
+import nl.jolanrensen.kodex.utils.replaceNonOverlappingRanges
 import org.junit.jupiter.api.Test
 
 class TestStringUtils {

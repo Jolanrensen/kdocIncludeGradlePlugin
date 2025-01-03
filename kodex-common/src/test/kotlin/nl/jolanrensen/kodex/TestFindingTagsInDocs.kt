@@ -1,6 +1,15 @@
 package nl.jolanrensen.kodex
 
 import io.kotest.matchers.shouldBe
+import nl.jolanrensen.kodex.docContent.asDocContent
+import nl.jolanrensen.kodex.docContent.asDocText
+import nl.jolanrensen.kodex.docContent.findBlockTagNames
+import nl.jolanrensen.kodex.docContent.findInlineTagNames
+import nl.jolanrensen.kodex.docContent.findInlineTagNamesWithRanges
+import nl.jolanrensen.kodex.docContent.getDocContent
+import nl.jolanrensen.kodex.utils.getTagNameOrNull
+import nl.jolanrensen.kodex.docContent.splitPerBlock
+import nl.jolanrensen.kodex.docContent.toDocText
 import org.junit.jupiter.api.Test
 import kotlin.test.Ignore
 

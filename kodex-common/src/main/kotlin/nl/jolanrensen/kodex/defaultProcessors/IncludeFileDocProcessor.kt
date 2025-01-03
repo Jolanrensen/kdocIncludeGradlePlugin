@@ -1,14 +1,14 @@
 package nl.jolanrensen.kodex.defaultProcessors
 
-import nl.jolanrensen.kodex.CompletionInfo
-import nl.jolanrensen.kodex.DocContent
-import nl.jolanrensen.kodex.DocumentableWrapper
-import nl.jolanrensen.kodex.HighlightInfo
-import nl.jolanrensen.kodex.HighlightType
-import nl.jolanrensen.kodex.ProgrammingLanguage.JAVA
-import nl.jolanrensen.kodex.ProgrammingLanguage.KOTLIN
-import nl.jolanrensen.kodex.TagDocProcessor
-import nl.jolanrensen.kodex.getTagArguments
+import nl.jolanrensen.kodex.intellij.CompletionInfo
+import nl.jolanrensen.kodex.docContent.DocContent
+import nl.jolanrensen.kodex.documentableWrapper.DocumentableWrapper
+import nl.jolanrensen.kodex.intellij.HighlightInfo
+import nl.jolanrensen.kodex.intellij.HighlightType
+import nl.jolanrensen.kodex.documentableWrapper.ProgrammingLanguage.JAVA
+import nl.jolanrensen.kodex.documentableWrapper.ProgrammingLanguage.KOTLIN
+import nl.jolanrensen.kodex.processor.TagDocProcessor
+import nl.jolanrensen.kodex.utils.getTagArguments
 import org.apache.commons.text.StringEscapeUtils
 import java.io.File
 import java.io.FileNotFoundException

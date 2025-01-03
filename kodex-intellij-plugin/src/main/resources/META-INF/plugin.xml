@@ -5,7 +5,7 @@
     <vendor>Jolan Rensen</vendor>
     <description><![CDATA[
     IntelliJ plugin counterpart for <a href="https://github.com/Jolanrensen/KoDEx">KoDEx<a/>.<br>
-    This can be considered an alpha version.<br>
+    This can be considered an Beta version.<br>
     For now, the order of default processors is unconfigurable, but this will be added in the future.<br>
     The order is like the recommended order:
     <ul>

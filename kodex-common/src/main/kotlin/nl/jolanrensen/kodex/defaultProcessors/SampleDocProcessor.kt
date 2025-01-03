@@ -1,16 +1,17 @@
 package nl.jolanrensen.kodex.defaultProcessors
 
-import nl.jolanrensen.kodex.CompletionInfo
-import nl.jolanrensen.kodex.DocumentableWrapper
-import nl.jolanrensen.kodex.ProgrammingLanguage
-import nl.jolanrensen.kodex.ProgrammingLanguage.JAVA
-import nl.jolanrensen.kodex.ProgrammingLanguage.KOTLIN
-import nl.jolanrensen.kodex.TagDocProcessor
-import nl.jolanrensen.kodex.decodeCallableTarget
+import nl.jolanrensen.kodex.intellij.CompletionInfo
+import nl.jolanrensen.kodex.documentableWrapper.DocumentableWrapper
+import nl.jolanrensen.kodex.documentableWrapper.ProgrammingLanguage
+import nl.jolanrensen.kodex.documentableWrapper.ProgrammingLanguage.JAVA
+import nl.jolanrensen.kodex.documentableWrapper.ProgrammingLanguage.KOTLIN
+import nl.jolanrensen.kodex.processor.TagDocProcessor
+import nl.jolanrensen.kodex.utils.decodeCallableTarget
 import nl.jolanrensen.kodex.defaultProcessors.IncludeDocProcessor.Companion.TAG
-import nl.jolanrensen.kodex.docRegex
-import nl.jolanrensen.kodex.getTagArguments
-import nl.jolanrensen.kodex.withoutFilters
+import nl.jolanrensen.kodex.docContent.docRegex
+import nl.jolanrensen.kodex.documentableWrapper.getAllFullPathsFromHereForTargetPath
+import nl.jolanrensen.kodex.utils.getTagArguments
+import nl.jolanrensen.kodex.query.withoutFilters
 import org.apache.commons.text.StringEscapeUtils
 
 /**

@@ -1,6 +1,10 @@
 package nl.jolanrensen.kodex
 
 import io.kotest.matchers.shouldBe
+import nl.jolanrensen.kodex.utils.decodeCallableTarget
+import nl.jolanrensen.kodex.utils.getTagArguments
+import nl.jolanrensen.kodex.utils.getTagArgumentsWithRanges
+import nl.jolanrensen.kodex.utils.removeEscapeCharacters
 import org.junit.jupiter.api.Test
 
 class TestGetTagArguments {

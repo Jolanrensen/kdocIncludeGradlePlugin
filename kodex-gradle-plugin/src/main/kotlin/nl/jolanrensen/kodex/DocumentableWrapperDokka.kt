@@ -2,6 +2,22 @@ package nl.jolanrensen.kodex
 
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiNamedElement
+import nl.jolanrensen.kodex.docContent.asDocContent
+import nl.jolanrensen.kodex.docContent.asDocTextOrNull
+import nl.jolanrensen.kodex.docContent.getDocContent
+import nl.jolanrensen.kodex.documentableWrapper.AnnotationWrapper
+import nl.jolanrensen.kodex.documentableWrapper.DocumentableWrapper
+import nl.jolanrensen.kodex.utils.documentString
+import nl.jolanrensen.kodex.utils.findClosestDocComment
+import nl.jolanrensen.kodex.utils.getImports
+import nl.jolanrensen.kodex.utils.getValue
+import nl.jolanrensen.kodex.utils.lastIndexOfNot
+import nl.jolanrensen.kodex.utils.paths
+import nl.jolanrensen.kodex.utils.programmingLanguage
+import nl.jolanrensen.kodex.utils.psi
+import nl.jolanrensen.kodex.utils.textRange
+import nl.jolanrensen.kodex.utils.toIntRange
+import nl.jolanrensen.kodex.utils.toSimpleImportPath
 import org.jetbrains.dokka.InternalDokkaApi
 import org.jetbrains.dokka.base.signatures.KotlinSignatureUtils.annotations
 import org.jetbrains.dokka.model.AnnotationValue

@@ -291,7 +291,7 @@ abstract class ProcessDocTask
             // redirect System.err to ERROR logs
             logging.captureStandardError(LogLevel.ERROR)
 
-            log.lifecycle { "Doc Processor is running!" }
+            log.lifecycle { "KoDEx is running!" }
 
             val sourceRoots = sources.get()
             val target = target.get()

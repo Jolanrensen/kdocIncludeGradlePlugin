@@ -3,6 +3,17 @@ package nl.jolanrensen.kodex
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiDocCommentOwner
 import com.intellij.psi.PsiElement
+import nl.jolanrensen.kodex.docContent.asDocContent
+import nl.jolanrensen.kodex.docContent.asDocTextOrNull
+import nl.jolanrensen.kodex.docContent.getDocContent
+import nl.jolanrensen.kodex.documentableWrapper.AnnotationWrapper
+import nl.jolanrensen.kodex.documentableWrapper.DocumentableWrapper
+import nl.jolanrensen.kodex.utils.docComment
+import nl.jolanrensen.kodex.utils.getImports
+import nl.jolanrensen.kodex.utils.lastIndexOfNot
+import nl.jolanrensen.kodex.utils.programmingLanguage
+import nl.jolanrensen.kodex.utils.toIntRange
+import nl.jolanrensen.kodex.utils.toSimpleImportPath
 import org.jetbrains.kotlin.analysis.api.analyze
 import org.jetbrains.kotlin.descriptors.CallableDescriptor
 import org.jetbrains.kotlin.idea.base.psi.kotlinFqName

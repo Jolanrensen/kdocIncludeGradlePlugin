@@ -1,8 +1,8 @@
 package nl.jolanrensen.kodex.defaultProcessors
 
-import nl.jolanrensen.kodex.DocumentableWrapper
-import nl.jolanrensen.kodex.TagDocProcessor
-import nl.jolanrensen.kodex.getTagArguments
+import nl.jolanrensen.kodex.documentableWrapper.DocumentableWrapper
+import nl.jolanrensen.kodex.processor.TagDocProcessor
+import nl.jolanrensen.kodex.utils.getTagArguments
 
 class ExampleDocProcessor : TagDocProcessor() {
 

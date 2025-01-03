@@ -10,6 +10,7 @@ import nl.jolanrensen.kodex.defaultProcessors.KeyAndValue
 import nl.jolanrensen.kodex.defaultProcessors.REMOVE_ESCAPE_CHARS_PROCESSOR
 import nl.jolanrensen.kodex.defaultProcessors.findKeyAndValueFromDollarSign
 import nl.jolanrensen.kodex.defaultProcessors.replaceDollarNotation
+import nl.jolanrensen.kodex.docContent.asDocContent
 import org.intellij.lang.annotations.Language
 import org.junit.Test
 

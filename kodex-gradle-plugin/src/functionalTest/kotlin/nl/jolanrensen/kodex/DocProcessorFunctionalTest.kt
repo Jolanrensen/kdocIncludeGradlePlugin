@@ -2,6 +2,8 @@
 
 package nl.jolanrensen.kodex
 
+import nl.jolanrensen.kodex.annotations.ExcludeFromSources
+import nl.jolanrensen.kodex.annotations.ExportAsHtml
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import org.intellij.lang.annotations.Language
