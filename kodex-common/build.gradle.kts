@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "nl.jolanrensen.kodex"
-version = "0.4.0-SNAPSHOT"
+version = "0.4.0-beta2"
 
 repositories {
     mavenCentral()
