@@ -3,13 +3,13 @@ package nl.jolanrensen.kodex.defaultProcessors
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import nl.jolanrensen.kodex.intellij.CompletionInfo
 import nl.jolanrensen.kodex.docContent.DocContent
-import nl.jolanrensen.kodex.processor.DocProcessor
-import nl.jolanrensen.kodex.query.DocumentablesByPath
+import nl.jolanrensen.kodex.docContent.asDocContent
+import nl.jolanrensen.kodex.intellij.CompletionInfo
 import nl.jolanrensen.kodex.intellij.HighlightInfo
 import nl.jolanrensen.kodex.intellij.HighlightType
-import nl.jolanrensen.kodex.docContent.asDocContent
+import nl.jolanrensen.kodex.processor.DocProcessor
+import nl.jolanrensen.kodex.query.DocumentablesByPath
 import nl.jolanrensen.kodex.utils.getIndicesOfEscapeChars
 import nl.jolanrensen.kodex.utils.removeEscapeCharacters
 

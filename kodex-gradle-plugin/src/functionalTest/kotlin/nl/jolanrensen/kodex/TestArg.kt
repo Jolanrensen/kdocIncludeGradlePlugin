@@ -912,9 +912,12 @@ class TestArg : DocProcessorFunctionalTest(name = "arg") {
         "a\${a}a".asDocContent().replaceDollarNotation().value shouldBe "a{@get a}a"
         "a\${test\\test}".asDocContent().replaceDollarNotation().value shouldBe "a{@get test\\test}"
         "a\${test test}".asDocContent().replaceDollarNotation().value shouldBe "a{@get test test}"
-        "\${[test with spaces][function]}".asDocContent().replaceDollarNotation().value shouldBe "{@get [test with spaces][function]}"
-        "\${hi \${test} \${\$hi}}".asDocContent().replaceDollarNotation().value shouldBe "{@get hi {@get test} {@get {@get hi}}}"
-        "\${hi \${test} \${\$hi hi}}".asDocContent().replaceDollarNotation().value shouldBe "{@get hi {@get test} {@get {@get hi} hi}}"
+        "\${[test with spaces][function]}".asDocContent().replaceDollarNotation().value shouldBe
+            "{@get [test with spaces][function]}"
+        "\${hi \${test} \${\$hi}}".asDocContent().replaceDollarNotation().value shouldBe
+            "{@get hi {@get test} {@get {@get hi}}}"
+        "\${hi \${test} \${\$hi hi}}".asDocContent().replaceDollarNotation().value shouldBe
+            "{@get hi {@get test} {@get {@get hi} hi}}"
         "Hello \${name}!".asDocContent().replaceDollarNotation().value shouldBe "Hello {@get name}!"
         "\nHello \${name}!\n".asDocContent().replaceDollarNotation().value shouldBe "\nHello {@get name}!\n"
 
@@ -924,7 +927,8 @@ class TestArg : DocProcessorFunctionalTest(name = "arg") {
         "\${a\\}".asDocContent().replaceDollarNotation().value shouldBe "{@get {a}\\}"
 
         "\$key no more key".asDocContent().replaceDollarNotation().value shouldBe "{@get key} no more key"
-        "\$[key] \$[key2] \$[key3]".asDocContent().replaceDollarNotation().value shouldBe "{@get [key]} {@get [key2]} {@get [key3]}"
+        "\$[key] \$[key2] \$[key3]".asDocContent().replaceDollarNotation().value shouldBe
+            "{@get [key]} {@get [key2]} {@get [key3]}"
         "a\${a}a\${a}a".asDocContent().replaceDollarNotation().value shouldBe "a{@get a}a{@get a}a"
         "\$[anything [] goes {}[a][test] ][replaceDollarNotation]".asDocContent().replaceDollarNotation().value shouldBe
             "{@get [anything [] goes {}[a][test] ][replaceDollarNotation]}"

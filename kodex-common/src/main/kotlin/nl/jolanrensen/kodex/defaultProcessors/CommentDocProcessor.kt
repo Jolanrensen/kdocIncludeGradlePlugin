@@ -1,8 +1,8 @@
 package nl.jolanrensen.kodex.defaultProcessors
 
-import nl.jolanrensen.kodex.intellij.CompletionInfo
 import nl.jolanrensen.kodex.docContent.DocContent
 import nl.jolanrensen.kodex.documentableWrapper.DocumentableWrapper
+import nl.jolanrensen.kodex.intellij.CompletionInfo
 import nl.jolanrensen.kodex.intellij.HighlightInfo
 import nl.jolanrensen.kodex.intellij.HighlightType
 import nl.jolanrensen.kodex.processor.TagDocProcessor

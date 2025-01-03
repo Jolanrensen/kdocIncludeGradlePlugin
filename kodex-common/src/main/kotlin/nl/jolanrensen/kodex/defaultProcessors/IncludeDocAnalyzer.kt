@@ -2,12 +2,12 @@ package nl.jolanrensen.kodex.defaultProcessors
 
 import nl.jolanrensen.kodex.documentableWrapper.DocumentableWrapper
 import nl.jolanrensen.kodex.documentableWrapper.queryDocumentables
+import nl.jolanrensen.kodex.processor.TagDocAnalyser
 import nl.jolanrensen.kodex.query.DocumentablesByPath
 import nl.jolanrensen.kodex.query.Edge
-import nl.jolanrensen.kodex.processor.TagDocAnalyser
+import nl.jolanrensen.kodex.query.withoutFilters
 import nl.jolanrensen.kodex.utils.decodeCallableTarget
 import nl.jolanrensen.kodex.utils.getTagArguments
-import nl.jolanrensen.kodex.query.withoutFilters
 import org.jgrapht.graph.SimpleDirectedGraph
 import java.util.Collections
 import java.util.UUID

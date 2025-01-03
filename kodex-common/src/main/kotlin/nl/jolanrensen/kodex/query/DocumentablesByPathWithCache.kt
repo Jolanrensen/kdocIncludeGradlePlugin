@@ -1,7 +1,7 @@
 package nl.jolanrensen.kodex.query
 
-import nl.jolanrensen.kodex.docContent.DocContent
 import nl.jolanrensen.kodex.defaultProcessors.IncludeDocAnalyzer
+import nl.jolanrensen.kodex.docContent.DocContent
 import nl.jolanrensen.kodex.documentableWrapper.DocumentableWrapper
 import nl.jolanrensen.kodex.documentableWrapper.MutableDocumentableWrapper
 import nl.jolanrensen.kodex.documentableWrapper.getDocHashcode
@@ -77,7 +77,8 @@ open class DocumentablesByPathWithCache(
 
         // build local dependency graph from docToProcess and update the global dependencyGraph
         val graph = IncludeDocAnalyzer.getAnalyzedResult(
-            processLimit = processLimit - 1, // catch circular dependencies
+            // catch circular dependencies
+            processLimit = processLimit - 1,
             documentablesByPath = this,
             analyzeQueriesToo = true,
         )

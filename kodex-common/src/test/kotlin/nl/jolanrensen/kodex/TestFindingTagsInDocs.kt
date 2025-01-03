@@ -7,9 +7,9 @@ import nl.jolanrensen.kodex.docContent.findBlockTagNames
 import nl.jolanrensen.kodex.docContent.findInlineTagNames
 import nl.jolanrensen.kodex.docContent.findInlineTagNamesWithRanges
 import nl.jolanrensen.kodex.docContent.getDocContent
-import nl.jolanrensen.kodex.utils.getTagNameOrNull
 import nl.jolanrensen.kodex.docContent.splitPerBlock
 import nl.jolanrensen.kodex.docContent.toDocText
+import nl.jolanrensen.kodex.utils.getTagNameOrNull
 import org.junit.jupiter.api.Test
 import kotlin.test.Ignore
 

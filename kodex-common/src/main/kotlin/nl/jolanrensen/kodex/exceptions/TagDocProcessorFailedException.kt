@@ -1,11 +1,11 @@
 package nl.jolanrensen.kodex.exceptions
 
 import nl.jolanrensen.kodex.docContent.DocContent
-import nl.jolanrensen.kodex.documentableWrapper.DocumentableWrapper
 import nl.jolanrensen.kodex.docContent.asDocContent
+import nl.jolanrensen.kodex.docContent.toDocText
+import nl.jolanrensen.kodex.documentableWrapper.DocumentableWrapper
 import nl.jolanrensen.kodex.utils.coerceAtMost
 import nl.jolanrensen.kodex.utils.getLineAndCharacterOffset
-import nl.jolanrensen.kodex.docContent.toDocText
 
 /**
  * This exception is thrown when a [TagDocProcessor] fails to process a tag.
@@ -163,6 +163,7 @@ open class TagDocProcessorFailedException(
                 appendLine("--------------------------------------------------")
             }.asDocContent()
         } catch (e: Throwable) {
-            "Failed to render message as KDoc for TagDocProcessorFailedException: ${e.message}, $message.".asDocContent()
+            "Failed to render message as KDoc for TagDocProcessorFailedException: ${e.message}, $message."
+                .asDocContent()
         }
 }

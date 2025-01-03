@@ -3,9 +3,9 @@ package nl.jolanrensen.kodex
 import nl.jolanrensen.kodex.docContent.asDocText
 import nl.jolanrensen.kodex.docContent.getDocContent
 import nl.jolanrensen.kodex.docContent.toDocText
-import nl.jolanrensen.kodex.documentableWrapper.ProgrammingLanguage.KOTLIN
 import nl.jolanrensen.kodex.documentableWrapper.DocumentableWrapper
 import nl.jolanrensen.kodex.documentableWrapper.ProgrammingLanguage
+import nl.jolanrensen.kodex.documentableWrapper.ProgrammingLanguage.KOTLIN
 import nl.jolanrensen.kodex.documentableWrapper.SimpleImportPath
 import nl.jolanrensen.kodex.processor.DocProcessor
 import nl.jolanrensen.kodex.query.toDocumentablesByPath

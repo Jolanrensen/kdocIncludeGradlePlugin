@@ -2,14 +2,14 @@ package nl.jolanrensen.kodex.processor
 
 import io.github.oshai.kotlinlogging.KLogger
 import io.github.oshai.kotlinlogging.KotlinLogging
-import nl.jolanrensen.kodex.intellij.CompletionInfo
 import nl.jolanrensen.kodex.docContent.DocContent
-import nl.jolanrensen.kodex.query.DocumentablesByPath
+import nl.jolanrensen.kodex.exceptions.DocProcessorFailedException
+import nl.jolanrensen.kodex.intellij.CompletionInfo
 import nl.jolanrensen.kodex.intellij.HighlightInfo
 import nl.jolanrensen.kodex.intellij.HighlightType
-import nl.jolanrensen.kodex.exceptions.DocProcessorFailedException
-import nl.jolanrensen.kodex.utils.surroundWith
+import nl.jolanrensen.kodex.query.DocumentablesByPath
 import nl.jolanrensen.kodex.query.withoutFilters
+import nl.jolanrensen.kodex.utils.surroundWith
 import java.io.Serializable
 import java.util.ServiceLoader
 

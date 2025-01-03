@@ -18,8 +18,8 @@ import com.intellij.util.ProcessingContext
 import nl.jolanrensen.kodex.completion.Mode.AFTER_ASTERISK
 import nl.jolanrensen.kodex.completion.Mode.AT_TAG_NAME
 import nl.jolanrensen.kodex.completion.Mode.IN_TEXT
-import nl.jolanrensen.kodex.kodexCompletionIsEnabled
 import nl.jolanrensen.kodex.getLoadedProcessors
+import nl.jolanrensen.kodex.kodexCompletionIsEnabled
 import org.jetbrains.kotlin.idea.completion.or
 import org.jetbrains.kotlin.idea.completion.singleCharPattern
 import org.jetbrains.kotlin.kdoc.lexer.KDocTokens

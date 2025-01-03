@@ -11,8 +11,8 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.util.PsiTreeUtil.processElements
-import nl.jolanrensen.kodex.utils.docComment
 import nl.jolanrensen.kodex.services.DocProcessorServiceK1
+import nl.jolanrensen.kodex.utils.docComment
 import org.jetbrains.annotations.Nls
 import org.jetbrains.kotlin.idea.KotlinDocumentationProvider
 import org.jetbrains.kotlin.psi.KtDeclaration

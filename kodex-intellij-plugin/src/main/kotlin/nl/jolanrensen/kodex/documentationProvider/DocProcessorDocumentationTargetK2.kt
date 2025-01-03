@@ -22,8 +22,8 @@ import com.intellij.psi.PsiManager
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiTreeUtil.processElements
 import io.ktor.utils.io.CancellationException
-import nl.jolanrensen.kodex.utils.docComment
 import nl.jolanrensen.kodex.services.DocProcessorServiceK2
+import nl.jolanrensen.kodex.utils.docComment
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.Nls
 import org.jetbrains.kotlin.idea.KotlinDocumentationProvider

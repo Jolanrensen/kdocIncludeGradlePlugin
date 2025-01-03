@@ -1,8 +1,8 @@
 package nl.jolanrensen.kodex.defaultProcessors
 
+import nl.jolanrensen.kodex.docContent.asDocContent
 import nl.jolanrensen.kodex.processor.DocProcessor
 import nl.jolanrensen.kodex.query.DocumentablesByPath
-import nl.jolanrensen.kodex.docContent.asDocContent
 import nl.jolanrensen.kodex.query.toDocumentablesByPath
 
 /**

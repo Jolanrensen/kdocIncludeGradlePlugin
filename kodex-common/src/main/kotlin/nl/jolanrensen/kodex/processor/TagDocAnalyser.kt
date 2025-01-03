@@ -1,8 +1,8 @@
 package nl.jolanrensen.kodex.processor
 
-import nl.jolanrensen.kodex.query.DocumentablesByPath
 import nl.jolanrensen.kodex.documentableWrapper.DocumentableWrapper
 import nl.jolanrensen.kodex.documentableWrapper.toMutable
+import nl.jolanrensen.kodex.query.DocumentablesByPath
 
 /**
  * Version of TagDocProcessor which does not modify any tags,
