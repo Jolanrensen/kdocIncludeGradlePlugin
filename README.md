@@ -3,6 +3,9 @@
 # `/** KoDEx */`: Kotlin Documentation Extensions
 [![Maven metadata URL](https://img.shields.io/maven-metadata/v?label=Gradle%20Plugin&metadataUrl=https%3A%2F%2Fplugins.gradle.org%2Fm2%2Fnl%2Fjolanrensen%2FdocProcessor%2Fnl.jolanrensen.docProcessor.gradle.plugin%2Fmaven-metadata.xml)](https://plugins.gradle.org/plugin/nl.jolanrensen.docProcessor)
 
+[![IntelliJ Plugin](https://img.shields.io/jetbrains/plugin/v/26250?label=IntelliJ%20Plugin)
+](https://plugins.jetbrains.com/plugin/26250---kodex---kotlin-documentation-extensions)
+
 KDoc Preprocessor Gradle Plugin and IDEA plugin (Beta)
 
 This Gradle plugin allows you to adapt your KDoc comments with custom preprocessors and obtain modified
@@ -522,6 +525,8 @@ documentation directly in the IDE.
 ![image](https://github.com/Jolanrensen/KoDEx/assets/17594275/7f051063-38c7-4e8b-aeb8-fa6cf14a2566)
 
 It now also helps with writing the documentation by providing completion, highlighting, and descriptions for the tags.
+
+Now on the [Marketplace](https://plugins.jetbrains.com/plugin/26250---kodex---kotlin-documentation-extensions)!
 
 Currently, the only way to try this is by building the plugin yourself from sources and installing it in IntelliJ.
 The plugin in its current state is unconfigurable and just uses the default processors as shown in the sample above.
