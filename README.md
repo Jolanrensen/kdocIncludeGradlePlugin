@@ -79,6 +79,8 @@ Included preprocessors are:
 | A processor that removes all KDoc comments.                                                                                                                                                                                                                                          | `NO_DOC_PROCESSOR`              |
 | A processor that adds a `/** TODO */` comment wherever there is no KDoc comment.                                                                                                                                                                                                     | `TODO_DOC_PROCESSOR`            |
 
+See the [Wiki](https://github.com/Jolanrensen/KoDEx/wiki/Notation) for more information on the tags.
+
 Of course, you can also try to make your own preprocessor (see [Custom Processors](#custom-processors)).
 For instance, you could make a processor that makes all KDoc comments uppercase,
 a tag processor that automatically inserts URLs to your website, or simply a processor that produces
