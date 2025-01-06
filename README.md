@@ -4,21 +4,33 @@
 [![Maven metadata URL](https://img.shields.io/maven-metadata/v?label=Gradle%20Plugin&metadataUrl=https%3A%2F%2Fplugins.gradle.org%2Fm2%2Fnl%2Fjolanrensen%2FdocProcessor%2Fnl.jolanrensen.docProcessor.gradle.plugin%2Fmaven-metadata.xml)](https://plugins.gradle.org/plugin/nl.jolanrensen.docProcessor)
 
 [![IntelliJ Plugin](https://img.shields.io/jetbrains/plugin/v/26250?label=IntelliJ%20Plugin)
-](https://plugins.jetbrains.com/plugin/26250---kodex---kotlin-documentation-extensions)
+](https://plugins.jetbrains.com/plugin/26250)
 
-KDoc Preprocessor Gradle Plugin and IDEA plugin (Beta)
+KDoc Preprocessor [Gradle Plugin](https://plugins.gradle.org/plugin/nl.jolanrensen.docProcessor) and [IDEA plugin (Beta)](https://plugins.jetbrains.com/plugin/26250)
 
-This Gradle plugin allows you to adapt your KDoc comments with custom preprocessors and obtain modified
-sources.
+Kotlin libraries use KDoc to document their code and especially their public API. This allows users
+to understand how to use the library and what to expect from it. However, writing KDoc can be a tedious task, especially
+when you have to repeat the same information in multiple places. KoDEx allows us to write the
+information only once and then include it in multiple places.
 
-These preprocessors can add custom tags to your KDoc comments or change the entirety of the
-comment.
-This is not a Dokka plugin, meaning you can actually get a `sources.jar` file with the modified comments instead of just
-having the comments modified in a `javadoc.jar` or a Dokka HTML website.
+KoDEx works in preprocessing 'waves'; In each wave, all KDoc comments are processed by a single preprocessor before
+passing on the results to the next.
+A preprocessor in KoDEx can modify its custom tags in your KDoc comments or change the entirety of the comment itself.
+See more about the [preprocessors](#preprocessors) below.
 
-Note: `{@inline tags}` work in KDoc comments too! Plus, `{@tags {@inside tags}}` are supported too.
-
+Note: `{@inline tags}` now work in KDocs too! Plus, `{@tags {@inside tags}}` are supported as well.
 (Javadoc may be supported, but since I have no need for it personally, I don't plan on supporting it explicitly.)
+
+KoDEx comes in the form of two plugins:
+
+- The KoDEx [IDEA Plugin](https://plugins.jetbrains.com/plugin/26250) allows you to preview the rendered KDocs in the IDE
+and provides completion, highlighting, and descriptions for the new tags.
+
+- The KoDEx [Gradle Plugin](https://plugins.gradle.org/plugin/nl.jolanrensen.docProcessor) allows you to actually process
+  all KDoc comments in your project with the custom preprocessors and obtain the modified sources afterward.
+
+(KoDEx is not a Dokka plugin, meaning you can actually get a `sources.jar` file with the modified comments instead of just
+having the comments modified in a `javadoc.jar` or a Dokka HTML website).
 
 ## Example
 
@@ -137,7 +149,7 @@ to `plugins { .. }`.
 
 ## How to use
 
-Say you want to create a task that will run when you're making a sources Jar such that the modified files appear in the
+Say you want to create a task that will run when you're making a sources.jar such that the modified files appear in the
 Jar:
 
 `build.gradle.kts`:
@@ -166,7 +178,7 @@ val processKdocMain by creatingProcessDocTask(sources = kotlinMainSources) {
     // Optional. The target folder of the processed files. By default ${project.buildDir}/kodex/${taskName}.
     target = file(..)
 
-    // The processors you want to use in this task.
+    // Optional. The processors you want to use in this task. If unspecified, the default processors will be used.
     // The recommended order of default processors is as follows:
     processors = listOf(
         INCLUDE_DOC_PROCESSOR, // The @include processor
@@ -259,7 +271,7 @@ def processKdocMain = tasks.register('processKdocMain', ProcessDocTask) {
     // Optional. The target folder of the processed files. By default ${project.buildDir}/kodex/${taskName}.
     target file(..)
 
-    // The processors you want to use in this task.
+    // Optional. The processors you want to use in this task. If unspecified, the default processors will be used.
     // The recommended order of default processors is as follows:
     processors(
         IncludeDocProcessorKt.INCLUDE_DOC_PROCESSOR, // The @include processor
@@ -345,7 +357,7 @@ tags inside comments of `@sample` might not be desired. Finally, the `REMOVE_ESC
 be last to clean up any escape characters that might have been introduced by the user to evade some parts of the docs
 from being processed.
 
-## Technicalities
+## Regarding Tags
 
 Block-tags in KDocs and JavaDocs are structured in a list-like structure and are thus also parsed and processed
 like that.
@@ -391,7 +403,7 @@ Take extra care when using tags that can introduce new tags, such as `@include`,
 of the doc to change mid-processing. Very powerful, but also potentially dangerous.
 If something weird happens, try to disable some processors to understand what's happening.
 
-## How the Gradle plugin works
+## How the Gradle Plugin Works
 
 - The sources provided to the plugin are read and analyzed by
   [Dokka's default SourceToDocumentableTranslators](https://kotlin.github.io/dokka/1.6.0/developer_guide/extension_points/#creating-documentation-models).
@@ -400,18 +412,18 @@ If something weird happens, try to disable some processors to understand what's 
 - Next, the documentation contents, location in the file, and indents are collected from each documentable
   in the map.
 - All processors are run in sequence on the collected documentables with their data:
-    - All documentables are iterated over and tag replacement processors, like `@include`, will replace all tags with new
+    - All documentables are iterated over and tag processors, like `@include`, will replace all tags with new
       content.
 - Finally, all files from the source are copied over to a destination folder, and if there are any modifications that
   need to be made in a file, the specified ranges for each documentation are replaced with the new documentation.
 
 ## Custom processors
 
-You can create your plugin for the Gradle plugin with your own processors by either extending the
+You can create an extension for the Gradle plugin with your own processors by either extending the
 abstract `TagDocProcessor` class or
 implementing the `DocProcessor` interface, depending on how much control you need over the docs.
 
-Make sure to depend on the sources by adding the following to your `build.gradle.kts` or `build.gradle` file:
+Make sure to depend on the right module by adding the following to your `build.gradle.kts` or `build.gradle` file:
 
 ```kts
 repositories {
@@ -421,6 +433,7 @@ repositories {
 
 dependencies {
     ..
+    implementation("nl.jolanrensen.kodex:kodex-common:{ VERSION }")
     compileOnly("nl.jolanrensen.kodex:kodex-gradle-plugin:{ VERSION }")
 }
 ```
@@ -478,14 +491,14 @@ class ExampleDocProcessor : TagDocProcessor() {
 }
 ```
 
-For the processor to be detectable, we need to add it to the
+For the processor to be detectable, we need to add this to the
 `src/main/resources/META-INF/services/nl.jolanrensen.kodex.processor.DocProcessor` file:
 
 ```
 com.example.plugin.ExampleDocProcessor
 ```
 
-and then publish the project somewhere it can be used in other projects.
+and then publish the project somewhere it can be used by other projects.
 
 Add the published project as dependency in your other project's `build.gradle.kts` file in your created
 doc process task (as described in the [How to Use](#how-to-use) section), both in the dependencies
@@ -526,9 +539,9 @@ documentation directly in the IDE.
 
 It now also helps with writing the documentation by providing completion, highlighting, and descriptions for the tags.
 
-Now on the [Marketplace](https://plugins.jetbrains.com/plugin/26250---kodex---kotlin-documentation-extensions)!
+Now on the [Marketplace](https://plugins.jetbrains.com/plugin/26250)!
 
-Currently, the only way to try this is by building the plugin yourself from sources and installing it in IntelliJ.
+You can also try building the plugin yourself from sources and installing it in IntelliJ.
 The plugin in its current state is unconfigurable and just uses the default processors as shown in the sample above.
 Also, it uses the IDE engine to resolve references.
 This is because it's a lot faster than my own engine + Dokka, but it does mean that there might be some differences
