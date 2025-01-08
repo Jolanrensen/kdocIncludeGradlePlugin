@@ -42,7 +42,7 @@ private val log = KotlinLogging.logger { }
  * Process doc task you can instantiate in your build.gradle(.kts) file.
  * For example using [Project.creatingProcessDocTask].
  */
-abstract class ProcessDocTask
+abstract class RunKodexTask
     @Inject
     constructor(factory: ObjectFactory) : DefaultTask() {
 
@@ -75,7 +75,11 @@ abstract class ProcessDocTask
         @get:Input
         val target: Property<File> = factory
             .property<File>()
-            .convention(File(project.buildDir, "kodex${File.separatorChar}${taskIdentity.name}"))
+            .convention(
+                project.layout.buildDirectory
+                    .dir("kodex${File.separatorChar}${taskIdentity.name}")
+                    .map { it.asFile },
+            )
 
         /**
          * Target folder to place the preprocessing results in.
@@ -103,37 +107,88 @@ abstract class ProcessDocTask
          * Defaults to $target/htmlExports
          */
         @get:Input
-        val exportAsHtmlDir: Property<File> = factory
+        internal val exportAsHtmlDir: Property<File> = factory
             .property<File>()
-            .convention(File(target.get(), "htmlExports"))
-
-        /**
-         * Target folder of @ExportAsHtml Docs
-         *
-         * Defaults to $target/htmlExports
-         */
-        fun exportAsHtmlDir(file: File): Unit = exportAsHtmlDir.set(file)
+            .convention(target.map { File(it, "htmlExports") })
 
         /**
          * Whether the output at [exportAsHtmlDir] should be read-only.
          * Defaults to `true`.
          */
         @get:Input
-        val htmlOutputReadOnly: Property<Boolean> = factory
+        internal val htmlOutputReadOnly: Property<Boolean> = factory
             .property<Boolean>()
             .convention(true)
 
+        inner class ExportAsHtmlDsl internal constructor() {
+
+            /**
+             * Target folder of @ExportAsHtml Docs
+             *
+             * Defaults to $target/htmlExports
+             */
+            var dir: File
+                get() = exportAsHtmlDir.get()
+                set(value) {
+                    exportAsHtmlDir.set(value)
+                }
+
+            /**
+             * Target folder of @ExportAsHtml Docs
+             *
+             * Defaults to $target/htmlExports
+             */
+            fun dir(file: File) {
+                exportAsHtmlDir.set(file)
+            }
+
+            /**
+             * Whether the output at [dir] should be read-only.
+             * Defaults to `true`.
+             */
+            var outputReadOnly: Boolean
+                get() = htmlOutputReadOnly.get()
+                set(value) {
+                    htmlOutputReadOnly.set(value)
+                }
+
+            /**
+             * Whether the output at [dir] should be read-only.
+             * Defaults to `true`.
+             */
+            fun outputReadOnly(boolean: Boolean) {
+                htmlOutputReadOnly.set(boolean)
+            }
+        }
+
         /**
-         * Whether the output at [exportAsHtmlDir] should be read-only.
-         * Defaults to `true`.
+         * DSL for configuring the @ExportAsHtml task.
          */
-        fun htmlOutputReadOnly(boolean: Boolean): Unit = htmlOutputReadOnly.set(boolean)
+        @get:Internal
+        val exportAsHtml = ExportAsHtmlDsl()
+
+        /**
+         * DSL for configuring the @ExportAsHtml task.
+         */
+        fun exportAsHtml(action: Action<ExportAsHtmlDsl>): Unit = action.execute(exportAsHtml)
 
         /**
          * Where the generated sources are placed.
+         *
+         * Only readable after the task has been executed.
+         * @see calculateTargets
          */
         @get:OutputFiles
         val targets: FileCollection = factory.fileCollection()
+
+        /**
+         * Calculate the targets based on the [sources] and [target] folder.
+         */
+        fun calculateTargets(): FileCollection {
+            val relativeSources = sources.get().map { it.relativeTo(baseDir.get()) }
+            val target = target.get()
+            return project.files(relativeSources.map { File(target, it.path) })
+        }
 
         /**
          * The limit for while-true loops in processors. This is to prevent infinite loops.
@@ -203,14 +258,14 @@ abstract class ProcessDocTask
         @Classpath
         val classpath: Configuration = project.maybeCreateRuntimeConfiguration()
 
-        /** Used by the task to execute [ProcessDocsGradleAction]. */
+        /** Used by the task to execute [RunKodexGradleAction]. */
         @get:Inject
         abstract val workerExecutor: WorkerExecutor
 
         private fun Project.maybeCreateRuntimeConfiguration(): Configuration =
             project.configurations.maybeCreate("kotlinKdocIncludePluginRuntime") {
                 isCanBeConsumed = true
-                val dokkaVersion = "2.0.0-Beta"
+                val dokkaVersion = "2.0.0"
 
                 dependencies.add(project.dependencies.create("org.jetbrains.dokka:analysis-kotlin-api:$dokkaVersion"))
                 dependencies.add(
@@ -223,7 +278,7 @@ abstract class ProcessDocTask
         private fun <T : Any> NamedDomainObjectContainer<T>.maybeCreate(name: String, configuration: T.() -> Unit): T =
             findByName(name) ?: create(name, configuration)
 
-        inner class DependencySetPluginDsl {
+        inner class DependencySetPluginDsl internal constructor() {
 
             /**
              * Adds a plugin dependency to the classpath of this task.
@@ -275,6 +330,15 @@ abstract class ProcessDocTask
          */
         fun dependencies(action: Action<DependencySetPluginDsl>): Unit = action.execute(dependencies)
 
+        @Deprecated(
+            "This notation is no longer needed.",
+            replaceWith = ReplaceWith("block()"),
+            level = DeprecationLevel.WARNING,
+        )
+        fun task(block: RunKodexTask.() -> Unit) {
+            block()
+        }
+
         init {
             outputs.upToDateWhen {
                 target.get().let {
@@ -291,19 +355,14 @@ abstract class ProcessDocTask
             // redirect System.err to ERROR logs
             logging.captureStandardError(LogLevel.ERROR)
 
-            log.lifecycle { "KoDEx is running!" }
+            log.lifecycle { "Kodex is running!" }
 
             val sourceRoots = sources.get()
             val target = target.get()
             val runtime = classpath.resolve()
             val processors = processors.get()
 
-            val relativeSources = sourceRoots.map { it.relativeTo(baseDir.get()) }
-            (targets as ConfigurableFileCollection).setFrom(
-                relativeSources.map {
-                    File(target, it.path)
-                },
-            )
+            (targets as ConfigurableFileCollection).setFrom(calculateTargets())
 
             if (target.exists()) target.deleteRecursively()
             target.mkdir()
@@ -329,7 +388,7 @@ abstract class ProcessDocTask
                 it.classpath.setFrom(runtime)
             }
 
-            workQueue.submit(ProcessDocsGradleAction::class.java) {
+            workQueue.submit(RunKodexGradleAction::class.java) {
                 it.baseDir = baseDir.get()
                 it.sources = sources
                 it.sourceRoots = sourceRoots

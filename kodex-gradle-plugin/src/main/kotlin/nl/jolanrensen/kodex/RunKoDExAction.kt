@@ -8,7 +8,7 @@ import nl.jolanrensen.kodex.docContent.DocContent
 import nl.jolanrensen.kodex.docContent.toDocText
 import nl.jolanrensen.kodex.documentableWrapper.DocumentableWrapper
 import nl.jolanrensen.kodex.documentableWrapper.getDocContentForHtmlRange
-import nl.jolanrensen.kodex.gradle.ProcessDocsGradleAction
+import nl.jolanrensen.kodex.gradle.RunKodexGradleAction
 import nl.jolanrensen.kodex.gradle.lifecycle
 import nl.jolanrensen.kodex.html.renderToHtml
 import nl.jolanrensen.kodex.processor.findProcessors
@@ -46,9 +46,9 @@ private val log = KotlinLogging.logger {}
  *  - Collect all modified documentables per file ([getModifiedDocumentablesPerFile])
  *  - Write files to the [Parameters.target] directory containing modified text ([copyAndModifySources])
  *
- * @see [ProcessDocsGradleAction] for a Gradle specific implementation.
+ * @see [RunKodexGradleAction] for a Gradle specific implementation.
  */
-abstract class ProcessDocsAction {
+abstract class RunKodexAction {
 
     interface Parameters {
         val baseDir: File
