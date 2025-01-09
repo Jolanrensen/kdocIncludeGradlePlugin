@@ -1,10 +1,10 @@
-<svg fill="none" viewBox="0 0 490 980" xmlns="http://www.w3.org/2000/svg">
+<svg fill="none" viewBox="0 0 550 600" xmlns="http://www.w3.org/2000/svg">
     <foreignObject width="100%" height="100%">
         <div xmlns="http://www.w3.org/1999/xhtml">
             <style>
                 .container {
-                    width: 490px;
-                    height: 950px;
+                    width: 530px;
+                    height: 570px;
                     background-color: #2B2B2B;
                     color: white;
                     padding: 10px;
@@ -12,6 +12,7 @@
                 .kdoc { color: #629755; font-style: italic }
                 .linkInKDoc { color: #8A653B }
                 .preprocessor { color: #BBB529; font-weight: bold }
+                .tag { font-weight: bold }
                 .comment { color: #808080 }
                 .annotation { color: #BBB529 }
                 .keyword { color: #CC7832; }
@@ -24,53 +25,32 @@
  *
  *  Special cases:
  *   - `<span class="preprocessor">{@get <span class="linkInKDoc">FUN</span>}</span>(NaN|+Inf|-Inf)` is `NaN`
+ *
+ * <span class="tag">@param</span> <span class="linkInKDoc">x</span> the angle in radians
+ * <span class="tag">@return</span> the <span class="preprocessor">{@get <span class="linkInKDoc">OP</span>}</span> of the angle <span class="linkInKDoc">[x]</span>
  */</span>
 <span class="annotation">@ExcludeFromSources</span>
 <span class="keyword">private interface</span> CosSinTanDocs
 
-<span class="kdoc">/**
- * <span class="preprocessor">@include <span class="linkInKDoc">[CosSinTanDocs]</span></span>
- * <span class="preprocessor">@set </span><span class="linkInKDoc">OP</span> cosine
- * <span class="preprocessor">@set </span><span class="linkInKDoc">FUN</span> cos
- */</span>
-<span class="annotation">@ExcludeFromSources</span>
-<span class="keyword">private interface</span> Cos
-
-<span class="kdoc">/**
- * <span class="preprocessor">@include <span class="linkInKDoc">[CosSinTanDocs]</span></span>
- * <span class="preprocessor">@set </span><span class="linkInKDoc">OP</span> sine
- * <span class="preprocessor">@set </span><span class="linkInKDoc">FUN</span> sin
- */</span>
-<span class="annotation">@ExcludeFromSources</span>
-<span class="keyword">private interface</span> Sin
-
-<span class="kdoc">/**
- * <span class="preprocessor">@include <span class="linkInKDoc">[CosSinTanDocs]</span></span>
- * <span class="preprocessor">@set </span><span class="linkInKDoc">OP</span> tangent
- * <span class="preprocessor">@set </span><span class="linkInKDoc">FUN</span> tan
- */</span>
-<span class="annotation">@ExcludeFromSources</span>
-<span class="keyword">private interface</span> Tan
-
 <span class="keyword">interface</span> MathH <b>{</b>
 
-    <span class="kdoc">/** <span class="preprocessor">@include <span class="linkInKDoc">[Cos]</span></span>*/</span>
+    <span class="kdoc">/** <span class="preprocessor">@include <span class="linkInKDoc">[CosSinTanDocs]</span></span> <span class="preprocessor">{@set </span><span class="linkInKDoc">OP</span> cosine<span class="preprocessor">}</span> <span class="preprocessor">{@set </span><span class="linkInKDoc">FUN</span> cos<span class="preprocessor">}</span> */</span>
     <span class="keyword">fun</span> cos(x: Double): Double
 
-    <span class="kdoc">/** <span class="preprocessor">@include <span class="linkInKDoc">[Cos]</span></span>*/</span>
-    <span class="keyword">fun</span> cos(x: Float): Float
+    <span class="kdoc">/** <span class="preprocessor">@include <span class="linkInKDoc">[cos]</span></span>*/</span>
+    <span class="keyword">fun</span> cos(x: Float): Double
 
-    <span class="kdoc">/** <span class="preprocessor">@include <span class="linkInKDoc">[Sin]</span></span>*/</span>
+    <span class="kdoc">/** <span class="preprocessor">@include <span class="linkInKDoc">[CosSinTanDocs]</span></span> <span class="preprocessor">{@set </span><span class="linkInKDoc">OP</span> sine<span class="preprocessor">}</span> <span class="preprocessor">{@set </span><span class="linkInKDoc">FUN</span> sin<span class="preprocessor">}</span> */</span>
     <span class="keyword">fun</span> sin(x: Double): Double
 
-    <span class="kdoc">/** <span class="preprocessor">@include <span class="linkInKDoc">[Sin]</span></span>*/</span>
-    <span class="keyword">fun</span> sin(x: Float): Float
+    <span class="kdoc">/** <span class="preprocessor">@include <span class="linkInKDoc">[sin]</span></span>*/</span>
+    <span class="keyword">fun</span> sin(x: Float): Double
 
-    <span class="kdoc">/** <span class="preprocessor">@include <span class="linkInKDoc">[Tan]</span></span>*/</span>
+    <span class="kdoc">/** <span class="preprocessor">@include <span class="linkInKDoc">[CosSinTanDocs]</span></span> <span class="preprocessor">{@set </span><span class="linkInKDoc">OP</span> tangent<span class="preprocessor">}</span> <span class="preprocessor">{@set </span><span class="linkInKDoc">FUN</span> tan<span class="preprocessor">}</span> */</span>
     <span class="keyword">fun</span> tan(x: Double): Double
 
-    <span class="kdoc">/** <span class="preprocessor">@include <span class="linkInKDoc">[Tan]</span></span>*/</span>
-    <span class="keyword">fun</span> tan(x: Float): Float
+    <span class="kdoc">/** <span class="preprocessor">@include <span class="linkInKDoc">[tan]</span></span>*/</span>
+    <span class="keyword">fun</span> tan(x: Float): Double
 <b>}</b></code>
             </pre>
         </div>
