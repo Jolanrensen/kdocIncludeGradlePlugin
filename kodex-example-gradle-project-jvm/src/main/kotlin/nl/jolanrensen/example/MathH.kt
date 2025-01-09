@@ -9,51 +9,39 @@ package nl.jolanrensen.example
  *
  *  Special cases:
  *   - `{@get FUN}(NaN|+Inf|-Inf)` is `NaN`
+ *
+ * @param x the angle in radians
+ * @return the {@get OP} of the angle [x]
  */
 @ExcludeFromSources
 private interface CosSinTanDocs
 
-/**
- * @include [CosSinTanDocs]
- * @set OP cosine
- * @set FUN cos
- */
-@ExcludeFromSources
-private interface Cos
-
-/**
- * @include [CosSinTanDocs]
- * @set OP sine
- * @set FUN sin
- */
-@ExcludeFromSources
-private interface Sin
-
-/**
- * @include [CosSinTanDocs]
- * @set OP tangent
- * @set FUN tan
- */
-@ExcludeFromSources
-private interface Tan
-
 interface MathH {
 
-    /** @include [Cos] */
+    /** @include [CosSinTanDocs] {@set OP cosine} {@set FUN cos} */
     fun cos(x: Double): Double
 
-    /** @include [Cos] */
-    fun cos(x: Float): Float
+    /** @include [cos] */
+    fun cos(x: Float): Double
 
-    /** @include [Sin] */
+    /** @include [cos] */
+    fun cos(x: Int): Double
+
+    /** @include [CosSinTanDocs] {@set OP sine} {@set FUN sin} */
     fun sin(x: Double): Double
 
-    /** @include [Sin] */
-    fun sin(x: Float): Float
+    /** @include [sin] */
+    fun sin(x: Float): Double
 
-    /** @include [Tan] */
+    /** @include [sin] */
+    fun sin(x: Int): Double
+
+    /** @include [CosSinTanDocs] {@set OP tangent} {@set FUN tan} */
     fun tan(x: Double): Double
 
-    /** @include [Tan] */
-    fun tan(x: Float): Float
+    /** @include [tan] */
+    fun tan(x: Float): Double
+
+    /** @include [tan] */
+    fun tan(x: Int): Double
 }

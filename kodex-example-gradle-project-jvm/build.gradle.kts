@@ -1,3 +1,5 @@
+import nl.jolanrensen.kodex.defaultProcessors.ARG_DOC_PROCESSOR_LOG_NOT_FOUND
+
 plugins {
     kotlin("jvm") version "2.0.20"
 
@@ -23,9 +25,11 @@ dependencies {
 
 kodex {
     preprocess(kotlin.sourceSets.main) {
-        newSourceSetName = "mainKodex"
+        // optional setup
+        arguments(
+            ARG_DOC_PROCESSOR_LOG_NOT_FOUND to false,
+        )
     }
-
     preprocess(kotlin.sourceSets.test)
 }
 
