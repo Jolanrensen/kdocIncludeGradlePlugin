@@ -34,7 +34,6 @@ import nl.jolanrensen.kodex.processor.DocProcessor
 import org.jetbrains.kotlin.idea.codeinsight.utils.findExistingEditor
 import org.jetbrains.kotlin.idea.highlighter.KotlinHighlightingColors
 import org.jetbrains.kotlin.kdoc.psi.api.KDoc
-import org.jetbrains.kotlin.psi.KtDeclaration
 import java.awt.Font
 import java.awt.event.KeyEvent
 import java.awt.event.KeyListener
@@ -65,11 +64,10 @@ class KDocHighlightAnnotator :
 
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
         if (!kodexHighlightingIsEnabled) return
-        if (element !is KtDeclaration) return
-        val kDoc = element.docComment ?: return
+        if (element !is KDoc) return
 
-        getHighlightInfosFor(kDoc, loadedProcessors).forEach {
-            it.createAsAnnotator(kDoc, holder)
+        getHighlightInfosFor(element, loadedProcessors).forEach {
+            it.createAsAnnotator(element, holder)
         }
 
         val editor = element.findExistingEditor() ?: return
