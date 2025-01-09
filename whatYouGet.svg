@@ -1,11 +1,11 @@
-<svg fill="none" viewBox="0 0 500 930" xmlns="http://www.w3.org/2000/svg">
+<svg fill="none" viewBox="0 0 500 1250" xmlns="http://www.w3.org/2000/svg">
     <foreignObject width="100%" height="100%">
         <div xmlns="http://www.w3.org/1999/xhtml">
             <style>
                 .container {
                     display: flex;
                     width: 490px;
-                    height: 900px;
+                    height: 1220px;
                     background-color: #2B2B2B;
                     color: white;
                     padding: 10px;
@@ -28,6 +28,9 @@
      *
      *  Special cases:
      *   - `cos(NaN|+Inf|-Inf)` is `NaN`
+     *
+     * <span class="tag">@param</span> <span class="linkInKDoc">x</span> the angle in radians
+     * <span class="tag">@return</span> the cosine of the angle <span class="linkInKDoc">[x]</span>
      */</span>
     <span class="keyword">fun</span> cos(x: Double): Double
 
@@ -36,14 +39,20 @@
      *
      *  Special cases:
      *   - `cos(NaN|+Inf|-Inf)` is `NaN`
+     *
+     * <span class="tag">@param</span> <span class="linkInKDoc">x</span> the angle in radians
+     * <span class="tag">@return</span> the cosine of the angle <span class="linkInKDoc">[x]</span>
      */</span>
-     <span class="keyword">fun</span> cos(x: Float): Float
+     <span class="keyword">fun</span> cos(x: Float): Double
 
     <span class="kdoc">/**
      * Computes the sine of the angle <span class="linkInKDoc">[x]</span> given in radians.
      *
      *  Special cases:
      *   - `sin(NaN|+Inf|-Inf)` is `NaN`
+     *
+     * <span class="tag">@param</span> <span class="linkInKDoc">x</span> the angle in radians
+     * <span class="tag">@return</span> the sine of the angle <span class="linkInKDoc">[x]</span>
      */</span>
      <span class="keyword">fun</span> sin(x: Double): Double
 
@@ -52,14 +61,20 @@
      *
      *  Special cases:
      *   - `sin(NaN|+Inf|-Inf)` is `NaN`
+     *
+     * <span class="tag">@param</span> <span class="linkInKDoc">x</span> the angle in radians
+     * <span class="tag">@return</span> the sine of the angle <span class="linkInKDoc">[x]</span>
      */</span>
-     <span class="keyword">fun</span> sin(x: Float): Float
+     <span class="keyword">fun</span> sin(x: Float): Double
 
     <span class="kdoc">/**
      * Computes the tangent of the angle <span class="linkInKDoc">[x]</span> given in radians.
      *
      *  Special cases:
      *   - `tan(NaN|+Inf|-Inf)` is `NaN`
+     *
+     * <span class="tag">@param</span> <span class="linkInKDoc">x</span> the angle in radians
+     * <span class="tag">@return</span> the tangent of the angle <span class="linkInKDoc">[x]</span>
      */</span>
      <span class="keyword">fun</span> tan(x: Double): Double
 
@@ -68,8 +83,11 @@
      *
      *  Special cases:
      *   - `tan(NaN|+Inf|-Inf)` is `NaN`
+     *
+     * <span class="tag">@param</span> <span class="linkInKDoc">x</span> the angle in radians
+     * <span class="tag">@return</span> the tangent of the angle <span class="linkInKDoc">[x]</span>
      */</span>
-     <span class="keyword">fun</span> tan(x: Float): Float
+     <span class="keyword">fun</span> tan(x: Float): Double
 <b>}</b></code>
             </pre>
         </div>
