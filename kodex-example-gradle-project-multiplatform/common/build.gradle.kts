@@ -34,3 +34,10 @@ kotlin {
         }
     }
 }
+
+kodex {
+    preprocess(kotlin.sourceSets.commonMain) {
+        generateJar = false
+        generateSourcesJar = false
+    }
+}

@@ -2,23 +2,36 @@
 
 package nl.jolanrensen.kodex.gradle
 
+import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.artifacts.Configuration
+import org.gradle.api.artifacts.Dependency.ARCHIVES_CONFIGURATION
+import org.gradle.api.artifacts.PublishArtifact
+import org.gradle.api.artifacts.type.ArtifactTypeDefinition.JAR_TYPE
+import org.gradle.api.plugins.BasePlugin
 import org.gradle.api.tasks.TaskContainer
+import org.gradle.api.tasks.TaskProvider
 import org.gradle.jvm.tasks.Jar
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.creating
 import org.gradle.kotlin.dsl.get
+import org.gradle.kotlin.dsl.register
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinSingleTargetExtension
 import org.jetbrains.kotlin.gradle.plugin.HasKotlinDependencies
+import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinMetadataTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinWithJavaTarget
+import org.jetbrains.kotlin.gradle.targets.js.ir.KLIB_TYPE
 import org.jetbrains.kotlin.gradle.targets.js.ir.KotlinJsIrTarget
+import org.jetbrains.kotlin.gradle.targets.js.ir.wasmDecamelizedDefaultNameOrNull
 import org.jetbrains.kotlin.gradle.targets.jvm.KotlinJvmTarget
+import org.jetbrains.kotlin.util.capitalizeDecapitalize.toLowerCaseAsciiOnly
 import java.io.File
 
 /**
@@ -34,10 +47,10 @@ class KodexPlugin : Plugin<Project> {
             repositories.mavenCentral()
 
             val objects = objects
-            val extension = KodexExtension(objects)
+            val extension: KodexExtension = objects.newInstance(KodexExtension::class.java)
             extensions.add("kodex", extension)
 
-            val kotlinExtension = project.extensions["kotlin"]
+            val kotlinExtension = extensions["kotlin"]
                 .let { it as? KotlinProjectExtension }
                 ?: error("Kotlin extension not found")
 
@@ -45,124 +58,223 @@ class KodexPlugin : Plugin<Project> {
 
             afterEvaluate {
                 extension.taskCreators.forEach {
-                    val inputSourceSet = it.inputSourceSet.get()
-                    val sourceSetName = it.sourceSetName.get()
-
-                    val taskName = "preprocess${sourceSetName.replaceFirstChar { it.titlecase() }}"
-                    val taskTargetDir = file(project.layout.buildDirectory.dir("kodex/$sourceSetName"))
-                    val task = tasks.createRunKodexTask(
-                        name = taskName,
-                        sources = inputSourceSet.kotlin.sourceDirectories,
-                    ) {
-                        group = "KoDEx"
-                        description = "Runs KoDEx $sourceSetName on the ${inputSourceSet.name} sources"
-                        target.set(taskTargetDir)
-//                        exportAsHtml {
-//                            it.dir = taskTargetDir.dir("html")
-//                        }
-
-                        // TODO configure the rest
-                    }
-
-                    val kodexSourceSet = kotlinSourceSets.create(sourceSetName) {
-                        it.kotlin.setSrcDirs(task.calculateTargets())
-                        it.resources.setSrcDirs(inputSourceSet.resources.sourceDirectories)
-                        inputSourceSet.copyDependenciesTo(it, project)
-                    }
-
-                    val targetsOfInputSourceSet = kotlinExtension.targets.filter { target ->
-                        target.compilations.any { compilation ->
-                            inputSourceSet in compilation.kotlinSourceSets
-                        }
-                    }
-
-                    val compilationsOfKodexSourceSet = targetsOfInputSourceSet.associateWith { target ->
-                        target.compilations.create(sourceSetName) {
-                            it.compileTaskProvider.get().dependsOn(task)
-                        }
-                    }
-
-                    when (kotlinExtension) {
-                        is KotlinMultiplatformExtension -> {
-                            TODO()
-                            val compilations = kotlinExtension.targets.map {
-                                val compilationName =
-                                    it.targetName + sourceSetName.replaceFirstChar { it.titlecase() }
-
-                                it.compilations.create(compilationName) {
-                                    it.compileTaskProvider.get().dependsOn(task)
-                                }
-                            }
-
-                            /** [org.jetbrains.kotlin.gradle.plugin.mpp.sourcesJarTask] */
-                            for (compilation in compilations) {
-                                val jar = tasks.create<Jar>("${compilation.name}Jar") {
-                                    group = "build"
-                                    description =
-                                        "Creates a compiled jar file with the KoDEx processed sources of ${compilation.name}"
-                                    archiveBaseName.set(project.name)
-                                    archiveVersion.set(project.version.toString())
-                                    archiveClassifier.set(compilation.name) // todo
-                                    from(compilation.output.allOutputs)
-                                    dependsOn(compilation.compileTaskProvider)
-                                }
-                                tasks.filter {
-                                    it != jar && "jar" in it.name.lowercase()
-                                }.forEach { it.dependsOn(jar) }
-                            }
-                        }
-
-                        is KotlinSingleTargetExtension<*> -> {
-                            if (it.generateJar.get()) {
-                                val target = kotlinExtension.target
-                                val compilation = compilationsOfKodexSourceSet[target]
-                                    ?: error("Compilation of $target not found")
-
-                                when (target) {
-                                    is KotlinWithJavaTarget<*, *>, is KotlinJvmTarget -> {
-//                                        compilation as KotlinWithJavaCompilation<*, *>
-
-                                        val jar = tasks.create<Jar>("${compilation.name}Jar") {
-                                            group = "build"
-                                            description =
-                                                "Creates a compiled jar file with the KoDEx processed sources of ${compilation.name}"
-                                            archiveBaseName.set(project.name)
-                                            archiveVersion.set(project.version.toString())
-                                            archiveClassifier.set("kodex")
-                                            from(compilation.output.allOutputs)
-                                            dependsOn(compilation.compileTaskProvider)
-                                        }
-                                        tasks.filter {
-                                            it != jar && "jar" in it.name.lowercase()
-                                        }.forEach { it.dependsOn(jar) }
-                                    }
-
-                                    is KotlinJsIrTarget, is KotlinNativeTarget -> TODO("Unsupported target $target")
-
-                                    else -> error("Unsupported target $target")
-                                }
-                            }
-
-                            if (it.generateSourcesJar.get()) {
-                                val sourcesJar = tasks.create<Jar>("${sourceSetName}SourcesJar") {
-                                    group = "build"
-                                    description =
-                                        "Creates a jar file with the KoDEx processed sources of $sourceSetName"
-                                    archiveBaseName.set(project.name)
-                                    archiveVersion.set(project.version.toString())
-                                    archiveClassifier.set("kodex-sources")
-                                    from(kodexSourceSet.kotlin)
-                                    dependsOn(task)
-                                }
-                                tasks.filter {
-                                    it != sourcesJar && "sourcesjar" in it.name.lowercase()
-                                }.forEach { it.dependsOn(sourcesJar) }
-                            }
-                        }
-                    }
+                    configureRunKodexTasks(it, kotlinSourceSets, kotlinExtension)
                 }
             }
         }
+
+    private fun Project.configureRunKodexTasks(
+        taskCreator: KodexSourceSetTaskCreator,
+        kotlinSourceSets: NamedDomainObjectContainer<KotlinSourceSet>,
+        kotlinExtension: KotlinProjectExtension,
+    ) {
+        val inputSourceSet = taskCreator.inputSourceSet.get()
+        val sourceSetName = taskCreator.newSourceSetName.get()
+        val taskName = taskCreator.taskName.get()
+        val isMain = taskCreator.isMainSourceSet.get()
+
+        val task = tasks.createRunKodexTask(
+            name = taskName,
+            sources = inputSourceSet.kotlin.sourceDirectories,
+        ) {
+            group = "KoDEx"
+            description = "Runs KoDEx $sourceSetName on the ${inputSourceSet.name} sources"
+            applyPropertiesFrom(taskCreator)
+            taskCreator.runOnTask.get().forEach {
+                it.execute(this)
+            }
+        }
+
+        val kodexSourceSet = kotlinSourceSets.create(sourceSetName) {
+            it.kotlin.setSrcDirs(task.calculateTargets())
+            it.resources.setSrcDirs(inputSourceSet.resources.sourceDirectories)
+            inputSourceSet.copyDependenciesTo(it, this)
+        }
+
+        val targetsOfInputSourceSet = kotlinExtension.targets.filter { target ->
+            target !is KotlinMetadataTarget &&
+                // TODO temp turned off for multiplatform
+                target.compilations.any { compilation ->
+                    inputSourceSet in compilation.kotlinSourceSets
+                }
+        }
+        val isSingleTarget = kotlinExtension is KotlinSingleTargetExtension<*>
+
+        val compilationsOfKodexSourceSet = targetsOfInputSourceSet.associateWith { target ->
+            val compilationName =
+                if (isSingleTarget) {
+                    sourceSetName
+                } else {
+                    "${sourceSetName}${
+                        target.name.replaceFirstChar {
+                            it.titlecase()
+                        }
+                    }"
+                }
+            target.compilations.create(compilationName) {
+                it.compileTaskProvider.get().dependsOn(task)
+                // TODO does it need more setup?
+            }
+        }
+
+        when (kotlinExtension) {
+            is KotlinMultiplatformExtension -> {
+                if (taskCreator.generateJar.get()) {
+                    error(
+                        "KoDEx cannot yet generate jars for multiplatform projects. Turn off generateJar and try it yourself.",
+                    )
+                }
+
+                if (taskCreator.generateSourcesJar.get()) {
+                    error(
+                        "KoDEx cannot yet generate sources jars for multiplatform projects. Turn off generateSourcesJar and try it yourself.",
+                    )
+                }
+            }
+
+            is KotlinSingleTargetExtension<*> -> {
+                if (taskCreator.generateJar.get()) {
+                    val target = kotlinExtension.target
+                    val compilation = compilationsOfKodexSourceSet[target]
+                        ?: error("Compilation of $target not found")
+
+                    when (target) {
+                        is KotlinWithJavaTarget<*, *>, is KotlinJvmTarget -> {
+                            val jar = target.createArtifactsTask(sourceSetName, isMain) {
+                                from(compilation.output.allOutputs)
+                                dependsOn(compilation.compileTaskProvider)
+                            }
+                            target.createPublishArtifact(
+                                artifactTask = jar,
+                                artifactType = JAR_TYPE,
+                                configurations[kodexSourceSet.apiConfigurationName],
+                                configurations.findByName(kodexSourceSet.runtimeOnlyConfigurationName),
+                            )
+                        }
+
+                        is KotlinJsIrTarget -> { // TODO test
+                            val jsKlibTask = target.createArtifactsTask(sourceSetName, isMain) {
+                                from(compilation.output.allOutputs)
+                                archiveExtension.set(KLIB_TYPE)
+//                                destinationDirectory.set(target.project.libsDirectory)
+                                destinationDirectory.set(layout.buildDirectory.dir("libs"))
+
+                                if (target.platformType == KotlinPlatformType.wasm) {
+                                    if (target.wasmDecamelizedDefaultNameOrNull() != null) {
+                                        target.disambiguationClassifier?.let { classifier ->
+                                            archiveAppendix.set(classifier.decamelize())
+                                        }
+                                    }
+                                }
+                            }
+
+                            target.createPublishArtifact(
+                                artifactTask = jsKlibTask,
+                                KLIB_TYPE,
+                                configurations[kodexSourceSet.apiConfigurationName],
+                                configurations.findByName(kodexSourceSet.runtimeOnlyConfigurationName),
+                            )
+                        }
+
+                        is KotlinNativeTarget ->
+                            TODO(
+                                "Unsupported single target $target for now, turn off generateJar and try generating a jar manually.",
+                            )
+
+                        else ->
+                            error("Unsupported target $target, turn off generateJar and try generating a jar manually")
+                    }
+                }
+
+                /**
+                 * todo
+                 * [org.jetbrains.kotlin.gradle.plugin.mpp.sourcesJarTask]
+                 * [org.jetbrains.kotlin.gradle.plugin.mpp.compilationImpl.KotlinCreateSourcesJarTaskSideEffect]
+                 */
+                if (taskCreator.generateSourcesJar.get()) {
+                    val sourcesJar = tasks.create<Jar>(
+                        name = buildString {
+                            append("kodex")
+                            append(sourceSetName.replaceFirstChar { it.titlecase() })
+                            append("SourcesJar")
+                        },
+                    ) {
+                        group = "build"
+                        description =
+                            "Creates a jar file with the KoDEx processed sources of $sourceSetName"
+                        archiveBaseName.set(project.name)
+                        archiveVersion.set(project.version.toString())
+                        if (isMain) {
+                            archiveClassifier.set("kodex-sources")
+                        } else {
+                            archiveClassifier.set("kodex-${sourceSetName.decamelize()}-sources")
+                        }
+                        from(kodexSourceSet.kotlin)
+                        dependsOn(task)
+                    }
+                    tasks.filter {
+                        it != sourcesJar && "sourcesjar" in it.name.lowercase()
+                    }.forEach { it.dependsOn(sourcesJar) }
+                }
+            }
+        }
+    }
+}
+
+internal fun String.decamelize(): String =
+    replace("([A-Z])".toRegex()) {
+        val (first) = it.destructured
+        "-${first.toLowerCaseAsciiOnly()}"
+    }
+
+internal fun KotlinTarget.createArtifactsTask(
+    sourceSetName: String,
+    isMain: Boolean,
+    configure: Jar.() -> Unit = {},
+): TaskProvider<Jar> =
+    project.tasks.register<Jar>(
+        name = buildString {
+            append("kodex")
+            append(sourceSetName.replaceFirstChar { it.titlecase() })
+            append(artifactsTaskName.replaceFirstChar { it.titlecase() })
+        },
+    ) {
+        description = "Assembles an archive containing the main classes processed by KoDEx."
+        group = BasePlugin.BUILD_GROUP
+        isPreserveFileTimestamps = false
+        isReproducibleFileOrder = true
+
+        archiveBaseName.set(project.name)
+        archiveVersion.set(project.version.toString())
+        if (isMain) {
+            archiveClassifier.set("kodex")
+        } else {
+            archiveClassifier.set("kodex-${sourceSetName.decamelize()}")
+        }
+
+        disambiguationClassifier?.let { classifier ->
+            archiveAppendix.set(classifier.toLowerCaseAsciiOnly())
+        }
+
+        configure()
+    }
+
+internal fun KotlinTarget.createPublishArtifact(
+    artifactTask: TaskProvider<*>,
+    artifactType: String,
+    vararg elementsConfiguration: Configuration?,
+): PublishArtifact {
+    val artifact = project.artifacts.add(ARCHIVES_CONFIGURATION, artifactTask) { artifact ->
+        artifact.builtBy(artifactTask)
+        artifact.type = artifactType
+    }
+
+    elementsConfiguration.filterNotNull().forEach { configuration ->
+        configuration.outgoing.artifacts.add(artifact)
+        // configuration.outgoing.attributes.setAttribute(project.artifactTypeAttribute, artifactType)
+    }
+
+    return artifact
 }
 
 val KotlinProjectExtension.targets: Iterable<KotlinTarget>
@@ -289,6 +401,7 @@ public fun TaskContainer.maybeCreateProcessDocTask(
  * @see [Project.creatingProcessDocTask]
  * @see [Project.createProcessDocTask]
  */
+@Suppress("DEPRECATION")
 @Deprecated(
     "Use maybeCreateRunKodexTask instead",
     ReplaceWith("this.maybeCreateRunKodexTask(name, sources, block)"),
@@ -315,6 +428,7 @@ public fun Project.maybeCreateProcessDocTask(name: String, sources: Iterable<Fil
  * @see [Project.creatingProcessDocTask]
  * @see [Project.maybeCreateProcessDocTask]
  */
+@Suppress("DEPRECATION")
 @Deprecated("Use createRunKodexTask instead", ReplaceWith("this.createRunKodexTask(sources, block)"))
 public fun Project.createProcessDocTask(name: String, sources: Iterable<File>, block: RunKodexTask.() -> Unit) =
     tasks.createProcessDocTask(name, sources, block)
@@ -338,6 +452,7 @@ public fun Project.createProcessDocTask(name: String, sources: Iterable<File>, b
  * @see [Project.createProcessDocTask]
  * @see [Project.maybeCreateProcessDocTask]
  */
+@Suppress("DEPRECATION")
 @Deprecated("Use creatingRunKodexTask instead", ReplaceWith("this.creatingRunKodexTask(sources, block)"))
 public fun Project.creatingProcessDocTask(sources: Iterable<File>, block: RunKodexTask.() -> Unit) =
     tasks.creatingProcessDocTask(sources, block)
