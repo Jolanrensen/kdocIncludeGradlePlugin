@@ -5,18 +5,23 @@ package nl.jolanrensen.example
  */
 
 /**
- * Computes the {@get OP} of the angle [x] given in radians.
+ * Gradle plugin end results are stored at `/build/kodex`
  *
- *  Special cases:
- *   - `{@get FUN}(NaN|+Inf|-Inf)` is `NaN`
- *
- * @param x the angle in radians
- * @return the {@get OP} of the angle [x]
+ * In most cases we can even use the Gradle plugin to generate a jar and sources-jar for us.
  */
-@ExcludeFromSources
-private interface CosSinTanDocs
+interface MathH4 {
 
-interface MathH {
+    /**
+     * Computes the {@get OP} of the angle [x] given in radians.
+     *
+     *  Special cases:
+     *   - `{@get FUN}(NaN|+Inf|-Inf)` is `NaN`
+     *
+     * @param x the angle in radians
+     * @return the {@get OP} of the angle [x]
+     */
+    @ExcludeFromSources
+    private interface CosSinTanDocs
 
     /** @include [CosSinTanDocs] {@set OP cosine} {@set FUN cos} */
     fun cos(x: Double): Double

@@ -12,6 +12,7 @@ version = "1.0"
 
 repositories {
     mavenCentral()
+    google()
 }
 
 kotlin {
@@ -21,6 +22,9 @@ kotlin {
 dependencies {
     implementation("org.jetbrains.kotlinx:dataframe:0.15.0")
     testImplementation(kotlin("test"))
+
+    implementation("androidx.compose.runtime:runtime:1.7.6")
+    implementation("androidx.compose.ui:ui:1.7.6")
 }
 
 kodex {
