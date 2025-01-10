@@ -12,7 +12,7 @@ import org.gradle.kotlin.dsl.property
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import javax.inject.Inject
 
-abstract class KodexSourceSetTaskCreator
+abstract class KodexSourceSetTaskBuilder
     @Inject
     constructor(
         sourceSetName: String,

@@ -7,6 +7,8 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import javax.inject.Inject
 
 /**
+ * ## EXPERIMENTAL
+ *
  * The main extension for KoDEx.
  *
  * Here you can attach KoDEx to your Kotlin source sets.
@@ -31,42 +33,42 @@ abstract class KodexExtension
         private val project: Project,
         private val factory: ObjectFactory,
     ) {
-        internal val taskCreators = mutableSetOf<KodexSourceSetTaskCreator>()
+        internal val taskCreators = mutableSetOf<KodexSourceSetTaskBuilder>()
 
         /**
          * Attaches KoDEx to the given [sourceSet].
-         *  - Creates a new SourceSet named "${sourceSetName}Kodex" by default ([KodexSourceSetTaskCreator.newSourceSetName]).
-         *  - Creates a new task for the given source set named "preprocess${newSourceSetName}" by default ([KodexSourceSetTaskCreator.taskName]).
+         *  - Creates a new SourceSet named "${sourceSetName}Kodex" by default ([KodexSourceSetTaskBuilder.newSourceSetName]).
+         *  - Creates a new task for the given source set named "preprocess${newSourceSetName}" by default ([KodexSourceSetTaskBuilder.taskName]).
          *  - This task will preprocess the given source set and store the results at
-         *  `build/kodex/$newSourceSetName` by default ([KodexSourceSetTaskCreator.target]).
+         *  `build/kodex/$newSourceSetName` by default ([KodexSourceSetTaskBuilder.target]).
          *  - Creates a jar task if [sourceSet] is the main source set, and we're not multiplatform
-         *  ([KodexSourceSetTaskCreator.generateJar]).
+         *  ([KodexSourceSetTaskBuilder.generateJar]).
          *  - Creates a sources jar task if [sourceSet] is the main source set, and we're not multiplatform
-         *  ([KodexSourceSetTaskCreator.generateSourcesJar]).
+         *  ([KodexSourceSetTaskBuilder.generateSourcesJar]).
          *
-         * @see KodexSourceSetTaskCreator
+         * @see KodexSourceSetTaskBuilder
          */
         public fun preprocess(
             sourceSet: NamedDomainObjectProvider<KotlinSourceSet>,
-            block: KodexSourceSetTaskCreator.() -> Unit = {},
+            block: KodexSourceSetTaskBuilder.() -> Unit = {},
         ) = preprocess(sourceSet.get(), block)
 
         /**
          * Attaches KoDEx to the given [sourceSet].
-         *  - Creates a new SourceSet named "${sourceSetName}Kodex" by default ([KodexSourceSetTaskCreator.newSourceSetName]).
-         *  - Creates a new task for the given source set named "preprocess${newSourceSetName}" by default ([KodexSourceSetTaskCreator.taskName]).
+         *  - Creates a new SourceSet named "${sourceSetName}Kodex" by default ([KodexSourceSetTaskBuilder.newSourceSetName]).
+         *  - Creates a new task for the given source set named "preprocess${newSourceSetName}" by default ([KodexSourceSetTaskBuilder.taskName]).
          *  - This task will preprocess the given source set and store the results at
-         *  `build/kodex/$newSourceSetName` by default ([KodexSourceSetTaskCreator.target]).
+         *  `build/kodex/$newSourceSetName` by default ([KodexSourceSetTaskBuilder.target]).
          *  - Creates a jar task if [sourceSet] is the main source set, and we're not multiplatform
-         *  ([KodexSourceSetTaskCreator.generateJar]).
+         *  ([KodexSourceSetTaskBuilder.generateJar]).
          *  - Creates a sources jar task if [sourceSet] is the main source set, and we're not multiplatform
-         *  ([KodexSourceSetTaskCreator.generateSourcesJar]).
+         *  ([KodexSourceSetTaskBuilder.generateSourcesJar]).
          *
-         * @see KodexSourceSetTaskCreator
+         * @see KodexSourceSetTaskBuilder
          */
-        public fun preprocess(sourceSet: KotlinSourceSet, block: KodexSourceSetTaskCreator.() -> Unit = {}) {
+        public fun preprocess(sourceSet: KotlinSourceSet, block: KodexSourceSetTaskBuilder.() -> Unit = {}) {
             val creator = factory.newInstance(
-                KodexSourceSetTaskCreator::class.java,
+                KodexSourceSetTaskBuilder::class.java,
                 sourceSet.name + "Kodex",
             )
             creator.inputSourceSet.set(sourceSet)
