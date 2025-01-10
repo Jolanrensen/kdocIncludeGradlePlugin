@@ -183,10 +183,10 @@ val processKdocMain by creatingProcessDocTask(sources = kotlinMainSources) {
     // Optional. The processors you want to use in this task. If unspecified, the default processors will be used.
     // The recommended order of default processors is as follows:
     processors = listOf(
+        COMMENT_DOC_PROCESSOR, // The @comment processor
         INCLUDE_DOC_PROCESSOR, // The @include processor
         INCLUDE_FILE_DOC_PROCESSOR, // The @includeFile processor
         ARG_DOC_PROCESSOR, // The @set and @get / $ processor
-        COMMENT_DOC_PROCESSOR, // The @comment processor
         SAMPLE_DOC_PROCESSOR, // The @sample and @sampleNoComments processor
         EXPORT_AS_HTML_DOC_PROCESSOR, // The @exportAsHtmlStart and @exportAsHtmlEnd tags for @ExportAsHtml
         REMOVE_ESCAPE_CHARS_PROCESSOR, // The processor that removes escape characters
@@ -276,10 +276,10 @@ def processKdocMain = tasks.register('processKdocMain', ProcessDocTask) {
     // Optional. The processors you want to use in this task. If unspecified, the default processors will be used.
     // The recommended order of default processors is as follows:
     processors(
+        CommentDocProcessorKt.COMMENT_DOC_PROCESSOR, // The @comment processor
         IncludeDocProcessorKt.INCLUDE_DOC_PROCESSOR, // The @include processor
         IncludeFileDocProcessorKt.INCLUDE_FILE_DOC_PROCESSOR, // The @includeFile processor
         ArgDocProcessorKt.ARG_DOC_PROCESSOR, // The @set and @get / $ processor
-        CommentDocProcessorKt.COMMENT_DOC_PROCESSOR, // The @comment processor
         SampleDocProcessorKt.SAMPLE_DOC_PROCESSOR, // The @sample and @sampleNoComments processor
         ExportAsHtmlDocProcessorKt.EXPORT_AS_HTML_DOC_PROCESSOR, // The @exportAsHtmlStart and @exportAsHtmlEnd tags for @ExportAsHtml
         RemoveEscapeCharsProcessorKt.REMOVE_ESCAPE_CHARS_PROCESSOR, // The processor that removes escape characters
@@ -343,18 +343,19 @@ tasks.withType(Jar).configureEach {
 
 While you can use the processors in any order and leave out some or include others, the recommended order is as follows:
 
+- `COMMENT_DOC_PROCESSOR`: The `@comment` processor
 - `INCLUDE_DOC_PROCESSOR`: The `@include` processor
 - `INCLUDE_FILE_DOC_PROCESSOR`: The `@includeFile` processor
 - `ARG_DOC_PROCESSOR`: The `@set` and `@get` / `$` processor. This runs `@set` first and then `@get` / `$`.
-- `COMMENT_DOC_PROCESSOR`: The `@comment` processor
 - `SAMPLE_DOC_PROCESSOR`: The `@sample` and `@sampleNoComments` processor
 - `EXPORT_AS_HTML_DOC_PROCESSOR`: The `@exportAsHtmlStart` and `@exportAsHtmlEnd` tags for `@ExportAsHtml`
 - `REMOVE_ESCAPE_CHARS_PROCESSOR`: The processor that removes escape characters
 
-This order ensures that `@set`/`@get` are processed after `@include` and `@includeFile` such that any arguments
+The `@comment` processor is recommended to be the first processor, such that its contents are removed before any other
+processor runs.
+Next, we ensure that `@set`/`@get` are processed after `@include` and `@includeFile` such that any arguments
 that appear by them are available for the `@set`/`@get` processor.
-The `@comment` processor is recommended to be after `@set`/`@get` too, as it can be used as a line break for
-tag blocks. `@sample` and `@sampleNoComments` are recommended to be last of the tag processors, as processing of inline
+`@sample` and `@sampleNoComments` are recommended to be last of the tag processors, as processing of inline
 tags inside comments of `@sample` might not be desired. Finally, the `REMOVE_ESCAPE_CHARS_PROCESSOR` is recommended to
 be last to clean up any escape characters that might have been introduced by the user to evade some parts of the docs
 from being processed.

@@ -153,11 +153,12 @@ abstract class ProcessDocTask
          * `"com.example.plugin.MyProcessor"`
          *
          * Defaults to:
-         * [[INCLUDE_DOC_PROCESSOR],
+         * [[COMMENT_DOC_PROCESSOR],
+         *  [INCLUDE_DOC_PROCESSOR],
          *  [INCLUDE_FILE_DOC_PROCESSOR],
          *  [ARG_DOC_PROCESSOR],
-         *  [COMMENT_DOC_PROCESSOR],
          *  [SAMPLE_DOC_PROCESSOR],
+         *  [EXPORT_AS_HTML_DOC_PROCESSOR],
          *  [REMOVE_ESCAPE_CHARS_PROCESSOR]]
          */
         @get:Input
@@ -165,10 +166,10 @@ abstract class ProcessDocTask
             .listProperty<String>()
             .convention(
                 listOf(
+                    COMMENT_DOC_PROCESSOR,
                     INCLUDE_DOC_PROCESSOR,
                     INCLUDE_FILE_DOC_PROCESSOR,
                     ARG_DOC_PROCESSOR,
-                    COMMENT_DOC_PROCESSOR,
                     SAMPLE_DOC_PROCESSOR,
                     EXPORT_AS_HTML_DOC_PROCESSOR,
                     REMOVE_ESCAPE_CHARS_PROCESSOR,
