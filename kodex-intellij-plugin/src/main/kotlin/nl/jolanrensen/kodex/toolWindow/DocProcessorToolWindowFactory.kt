@@ -1,6 +1,7 @@
 package nl.jolanrensen.kodex.toolWindow
 
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.content.ContentFactory
@@ -32,9 +33,12 @@ class DocProcessorToolWindowFactory : ToolWindowFactory {
 
     override fun shouldBeAvailable(project: Project) = true
 
-    class DocProcessorToolWindow(toolWindow: ToolWindow) {
-        fun getContent(): JComponent =
-            panel {
+    class DocProcessorToolWindow(val toolWindow: ToolWindow) {
+
+        private lateinit var panel: DialogPanel
+
+        fun getContent(): JComponent {
+            panel = panel {
                 indent {
                     group(MessageBundle.message("settings")) {
                         for (setting in allSettings) {
@@ -43,12 +47,15 @@ class DocProcessorToolWindowFactory : ToolWindowFactory {
                                     is BooleanSetting ->
                                         checkBox(MessageBundle.message(setting.messageBundleName))
                                             .bindSelected(setting::value)
+                                            .onChanged { panel.apply() }
 
                                     is EnumSetting<*> -> {
                                         label(MessageBundle.message(setting.messageBundleName))
-                                        comboBox(setting.values).bindItem({ setting.value }) {
-                                            it?.let { setting.setValueAsAny(it) }
-                                        }
+                                        comboBox(setting.values)
+                                            .bindItem({ setting.value }) {
+                                                it?.let { setting.setValueAsAny(it) }
+                                            }
+                                            .onChanged { panel.apply() }
                                     }
                                 }
                             }
@@ -68,5 +75,7 @@ class DocProcessorToolWindowFactory : ToolWindowFactory {
                     }
                 }
             }
+            return panel
+        }
     }
 }
