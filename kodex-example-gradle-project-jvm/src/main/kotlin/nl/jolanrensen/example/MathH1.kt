@@ -3,7 +3,7 @@ package nl.jolanrensen.example
 interface MathH1 {
 
     /**
-     * Computes the cosine of the angle [x] given in degrees.
+     * Computes the cosine of the anglle [x] given in degrees.
      *
      *  Special cases:
      *   - `cos(NaN|+Inf|-Inf)` is `NaN`
@@ -14,7 +14,7 @@ interface MathH1 {
     fun cos(x: Double): Double
 
     /**
-     * ...
+     * Computes ...
      */
     fun cos(x: Float): Double
 

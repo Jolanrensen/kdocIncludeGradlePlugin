@@ -1,4 +1,5 @@
 import nl.jolanrensen.kodex.defaultProcessors.ARG_DOC_PROCESSOR_LOG_NOT_FOUND
+import nl.jolanrensen.kodex.gradle.creatingRunKodexTask
 
 plugins {
     kotlin("jvm") version "2.0.20"
@@ -27,14 +28,46 @@ dependencies {
     implementation("androidx.compose.ui:ui:1.7.6")
 }
 
+// new experimental gradle extension
 kodex {
     preprocess(kotlin.sourceSets.main) {
         // optional setup
-        arguments(
-            ARG_DOC_PROCESSOR_LOG_NOT_FOUND to false,
-        )
+        arguments(ARG_DOC_PROCESSOR_LOG_NOT_FOUND to false)
     }
-    preprocess(kotlin.sourceSets.test)
+}
+
+// old KoDEx notation
+val kotlinMainSources: FileCollection = kotlin.sourceSets.main.get().kotlin.sourceDirectories
+
+val preprocessMainKodexOld by creatingRunKodexTask(sources = kotlinMainSources) {
+    arguments(ARG_DOC_PROCESSOR_LOG_NOT_FOUND to false)
+}
+
+// Modify all Jar tasks such that before running the Kotlin sources are set to
+// the target of processKdocMain and they are returned back to normal afterwards.
+tasks.withType<Jar> {
+    dependsOn(preprocessMainKodexOld)
+    outputs.upToDateWhen { false }
+
+    doFirst {
+        kotlin {
+            sourceSets {
+                main {
+                    kotlin.setSrcDirs(preprocessMainKodexOld.targets)
+                }
+            }
+        }
+    }
+
+    doLast {
+        kotlin {
+            sourceSets {
+                main {
+                    kotlin.setSrcDirs(kotlinMainSources)
+                }
+            }
+        }
+    }
 }
 
 tasks.test {

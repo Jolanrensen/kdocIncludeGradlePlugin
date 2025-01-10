@@ -35,6 +35,7 @@ kotlin {
     }
 }
 
+// TODO make example for how to build Jars here too
 kodex {
     preprocess(kotlin.sourceSets.commonMain) {
         generateJar = false

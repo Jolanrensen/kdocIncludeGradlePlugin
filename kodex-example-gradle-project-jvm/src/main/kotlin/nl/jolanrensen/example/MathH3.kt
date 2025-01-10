@@ -3,7 +3,7 @@ package nl.jolanrensen.example
 interface MathH3 {
 
     /**
-     * Computes the {@get OP} of the angle [x] given in degrees.
+     * Computes the {@get OP} of the angle [x] given in degrees. {@comment Oh no! I mean radians!}
      *
      *  Special cases:
      *   - `{@get FUN}(NaN|+Inf|-Inf)` is `NaN`

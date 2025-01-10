@@ -20,7 +20,7 @@ interface MathH2 {
     fun cos(x: Int): Double
 
     /**
-     * Computes the sine of the angle [x] given in degrees {@comment Oh no! I mean radians!}.
+     * Computes the sine of the angle [x] given in degrees.
      *
      *  Special cases:
      *   - `sin(NaN|+Inf|-Inf)` is `NaN`

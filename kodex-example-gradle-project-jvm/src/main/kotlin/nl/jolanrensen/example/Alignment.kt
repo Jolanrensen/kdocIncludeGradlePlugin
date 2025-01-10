@@ -22,29 +22,9 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.util.fastRoundToInt
-import nl.jolanrensen.example.BiasAlignmentDocs.*
-
-/**
- * An interface to calculate the position of box of a certain $DIMENSION inside an available $DIMENSION.
- * $REFERENCE is often used to define the $DIRECTION alignment of a layout inside a
- * parent layout.
- */
-@ExcludeFromSources
-private interface CommonAlignmentDocs
-
-/**
- * Calculates the $DIRECTION position of a box of $DIMENSION [size] relative to the $SIDE side of
- * an area of $DIMENSION [space]. {@include [OffsetNote]}
- */
-@ExcludeFromSources
-private interface AlignDocs
-
-/**
- * The returned offset can be negative or larger than `space - size`, meaning that
- * the box will be positioned partially or completely outside the area.
- */
-@ExcludeFromSources
-private interface OffsetNote
+import nl.jolanrensen.example.BiasAlignmentDocs.ALIGNMENT_REF
+import nl.jolanrensen.example.BiasAlignmentDocs.END
+import nl.jolanrensen.example.BiasAlignmentDocs.START
 
 /**
  * An interface to calculate the position of a sized box inside an available space. [Alignment] is
@@ -58,19 +38,30 @@ private interface OffsetNote
 fun interface Alignment {
 
     /**
+     * The returned offset can be negative or larger than `space - size`, meaning that
+     * the box will be positioned partially or completely outside the area.
+     */
+    @ExcludeFromSources
+    private interface OffsetNote
+
+    /**
      * Calculates the position of a box of size [size] relative to the top left corner of an area of
      * size [space]. {@include [OffsetNote]}
      */
     fun align(size: IntSize, space: IntSize, layoutDirection: LayoutDirection): IntOffset
 
     /**
-     * @include [CommonAlignmentDocs]
-     * {@set DIMENSION width} {@set DIRECTION horizontal} {@set REFERENCE [Alignment.Horizontal]}
+     * An interface to calculate the position of box of a certain width inside an available width.
+     * [Alignment.Horizontal] is often used to define the horizontal alignment of a layout inside a
+     * parent layout.
      */
     @Stable
     fun interface Horizontal {
 
-        /** @include [AlignDocs] {@set DIMENSION width} {@set DIRECTION horizontal} {@set SIDE left} */
+        /**
+         * Calculates the horizontal position of a box of width [size] relative to the left side of
+         * an area of width [space]. {@include [OffsetNote]}
+         */
         fun align(size: Int, space: Int, layoutDirection: LayoutDirection): Int
 
         /**
@@ -81,13 +72,17 @@ fun interface Alignment {
     }
 
     /**
-     * @include [CommonAlignmentDocs]
-     * {@set DIMENSION height} {@set DIRECTION vertical}{@set REFERENCE [Alignment.Vertical]}
+     * An interface to calculate the position of a box of a certain height inside an available
+     * height. [Alignment.Vertical] is often used to define the vertical alignment of a layout
+     * inside a parent layout.
      */
     @Stable
     fun interface Vertical {
 
-        /** @include [AlignDocs] {@set DIMENSION height} {@set DIRECTION vertical} {@set SIDE top} */
+        /**
+         * Calculates the vertical position of a box of height [size] relative to the top edge of an
+         * area of height [space]. {@include [OffsetNote]}
+         */
         fun align(size: Int, space: Int): Int
 
         /**
@@ -196,13 +191,9 @@ object AbsoluteAlignment {
  * alignment will position the aligned size fully inside the available space, while outside the
  * range it will the aligned size will be positioned partially or completely outside.
  */
-@ExcludeFromSources
-interface BiasAlignmentDocs {
-    interface ALIGNMENT_REF
-
-    interface START
-
-    interface END
+@Suppress("ClassName", "ktlint:standard:blank-line-before-declaration", "ktlint:standard:statement-wrapping")
+private interface BiasAlignmentDocs {
+    interface ALIGNMENT_REF; interface START; interface END
 }
 
 /**
