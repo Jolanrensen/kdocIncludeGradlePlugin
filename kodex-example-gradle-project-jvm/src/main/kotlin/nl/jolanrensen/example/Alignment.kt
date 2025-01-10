@@ -22,6 +22,29 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.util.fastRoundToInt
+import nl.jolanrensen.example.BiasAlignmentDocs.*
+
+/**
+ * An interface to calculate the position of box of a certain $DIMENSION inside an available $DIMENSION.
+ * $REFERENCE is often used to define the $DIRECTION alignment of a layout inside a
+ * parent layout.
+ */
+@ExcludeFromSources
+private interface CommonAlignmentDocs
+
+/**
+ * Calculates the $DIRECTION position of a box of $DIMENSION [size] relative to the $SIDE side of
+ * an area of $DIMENSION [space]. {@include [OffsetNote]}
+ */
+@ExcludeFromSources
+private interface AlignDocs
+
+/**
+ * The returned offset can be negative or larger than `space - size`, meaning that
+ * the box will be positioned partially or completely outside the area.
+ */
+@ExcludeFromSources
+private interface OffsetNote
 
 /**
  * An interface to calculate the position of a sized box inside an available space. [Alignment] is
@@ -33,35 +56,21 @@ import androidx.compose.ui.util.fastRoundToInt
  */
 @Stable
 fun interface Alignment {
+
     /**
      * Calculates the position of a box of size [size] relative to the top left corner of an area of
-     * size [space]. The returned offset can be negative or larger than `space - size`, meaning that
-     * the box will be positioned partially or completely outside the area.
+     * size [space]. {@include [OffsetNote]}
      */
     fun align(size: IntSize, space: IntSize, layoutDirection: LayoutDirection): IntOffset
 
     /**
-     * An interface to calculate the position of box of a certain {@get DIMENSION} inside an available {@get DIMENSION}.
-     * [Alignment.Horizontal] is often used to define the horizontal alignment of a layout inside a
-     * parent layout.
-     */
-    @ExcludeFromSources private interface AlignmentDocs {
-        interface DIMENSION
-        interface REF
-    }
-
-    /**
-     * An interface to calculate the position of box of a certain width inside an available width.
-     * [Alignment.Horizontal] is often used to define the horizontal alignment of a layout inside a
-     * parent layout.
+     * @include [CommonAlignmentDocs]
+     * {@set DIMENSION width} {@set DIRECTION horizontal} {@set REFERENCE [Alignment.Horizontal]}
      */
     @Stable
     fun interface Horizontal {
-        /**
-         * Calculates the horizontal position of a box of width [size] relative to the left side of
-         * an area of width [space]. The returned offset can be negative or larger than `space -
-         * size` meaning that the box will be positioned partially or completely outside the area.
-         */
+
+        /** @include [AlignDocs] {@set DIMENSION width} {@set DIRECTION horizontal} {@set SIDE left} */
         fun align(size: Int, space: Int, layoutDirection: LayoutDirection): Int
 
         /**
@@ -72,17 +81,13 @@ fun interface Alignment {
     }
 
     /**
-     * An interface to calculate the position of a box of a certain height inside an available
-     * height. [Alignment.Vertical] is often used to define the vertical alignment of a layout
-     * inside a parent layout.
+     * @include [CommonAlignmentDocs]
+     * {@set DIMENSION height} {@set DIRECTION vertical}{@set REFERENCE [Alignment.Vertical]}
      */
     @Stable
     fun interface Vertical {
-        /**
-         * Calculates the vertical position of a box of height [size] relative to the top edge of an
-         * area of height [space]. The returned offset can be negative or larger than `space - size`
-         * meaning that the box will be positioned partially or completely outside the area.
-         */
+
+        /** @include [AlignDocs] {@set DIMENSION height} {@set DIRECTION vertical} {@set SIDE top} */
         fun align(size: Int, space: Int): Int
 
         /**
@@ -95,25 +100,52 @@ fun interface Alignment {
     /** A collection of common [Alignment]s aware of layout direction. */
     companion object {
         // 2D Alignments.
-        @Stable val TopStart: Alignment = BiasAlignment(-1f, -1f)
-        @Stable val TopCenter: Alignment = BiasAlignment(0f, -1f)
-        @Stable val TopEnd: Alignment = BiasAlignment(1f, -1f)
-        @Stable val CenterStart: Alignment = BiasAlignment(-1f, 0f)
-        @Stable val Center: Alignment = BiasAlignment(0f, 0f)
-        @Stable val CenterEnd: Alignment = BiasAlignment(1f, 0f)
-        @Stable val BottomStart: Alignment = BiasAlignment(-1f, 1f)
-        @Stable val BottomCenter: Alignment = BiasAlignment(0f, 1f)
-        @Stable val BottomEnd: Alignment = BiasAlignment(1f, 1f)
+        @Stable
+        val TopStart: Alignment = BiasAlignment(-1f, -1f)
+
+        @Stable
+        val TopCenter: Alignment = BiasAlignment(0f, -1f)
+
+        @Stable
+        val TopEnd: Alignment = BiasAlignment(1f, -1f)
+
+        @Stable
+        val CenterStart: Alignment = BiasAlignment(-1f, 0f)
+
+        @Stable
+        val Center: Alignment = BiasAlignment(0f, 0f)
+
+        @Stable
+        val CenterEnd: Alignment = BiasAlignment(1f, 0f)
+
+        @Stable
+        val BottomStart: Alignment = BiasAlignment(-1f, 1f)
+
+        @Stable
+        val BottomCenter: Alignment = BiasAlignment(0f, 1f)
+
+        @Stable
+        val BottomEnd: Alignment = BiasAlignment(1f, 1f)
 
         // 1D Alignment.Verticals.
-        @Stable val Top: Vertical = BiasAlignment.Vertical(-1f)
-        @Stable val CenterVertically: Vertical = BiasAlignment.Vertical(0f)
-        @Stable val Bottom: Vertical = BiasAlignment.Vertical(1f)
+        @Stable
+        val Top: Vertical = BiasAlignment.Vertical(-1f)
+
+        @Stable
+        val CenterVertically: Vertical = BiasAlignment.Vertical(0f)
+
+        @Stable
+        val Bottom: Vertical = BiasAlignment.Vertical(1f)
 
         // 1D Alignment.Horizontals.
-        @Stable val Start: Horizontal = BiasAlignment.Horizontal(-1f)
-        @Stable val CenterHorizontally: Horizontal = BiasAlignment.Horizontal(0f)
-        @Stable val End: Horizontal = BiasAlignment.Horizontal(1f)
+        @Stable
+        val Start: Horizontal = BiasAlignment.Horizontal(-1f)
+
+        @Stable
+        val CenterHorizontally: Horizontal = BiasAlignment.Horizontal(0f)
+
+        @Stable
+        val End: Horizontal = BiasAlignment.Horizontal(1f)
     }
 }
 
@@ -131,30 +163,57 @@ private class CombinedAlignment(
 /** A collection of common [Alignment]s unaware of the layout direction. */
 object AbsoluteAlignment {
     // 2D AbsoluteAlignments.
-    @Stable val TopLeft: Alignment = BiasAbsoluteAlignment(-1f, -1f)
-    @Stable val TopRight: Alignment = BiasAbsoluteAlignment(1f, -1f)
-    @Stable val CenterLeft: Alignment = BiasAbsoluteAlignment(-1f, 0f)
-    @Stable val CenterRight: Alignment = BiasAbsoluteAlignment(1f, 0f)
-    @Stable val BottomLeft: Alignment = BiasAbsoluteAlignment(-1f, 1f)
-    @Stable val BottomRight: Alignment = BiasAbsoluteAlignment(1f, 1f)
+    @Stable
+    val TopLeft: Alignment = BiasAbsoluteAlignment(-1f, -1f)
+
+    @Stable
+    val TopRight: Alignment = BiasAbsoluteAlignment(1f, -1f)
+
+    @Stable
+    val CenterLeft: Alignment = BiasAbsoluteAlignment(-1f, 0f)
+
+    @Stable
+    val CenterRight: Alignment = BiasAbsoluteAlignment(1f, 0f)
+
+    @Stable
+    val BottomLeft: Alignment = BiasAbsoluteAlignment(-1f, 1f)
+
+    @Stable
+    val BottomRight: Alignment = BiasAbsoluteAlignment(1f, 1f)
 
     // 1D BiasAbsoluteAlignment.Horizontals.
-    @Stable val Left: Alignment.Horizontal = BiasAbsoluteAlignment.Horizontal(-1f)
-    @Stable val Right: Alignment.Horizontal = BiasAbsoluteAlignment.Horizontal(1f)
+    @Stable
+    val Left: Alignment.Horizontal = BiasAbsoluteAlignment.Horizontal(-1f)
+
+    @Stable
+    val Right: Alignment.Horizontal = BiasAbsoluteAlignment.Horizontal(1f)
 }
 
 /**
- * An [Alignment] specified by bias: for example, a bias of -1 represents alignment to the
- * start/top, a bias of 0 will represent centering, and a bias of 1 will represent end/bottom. Any
- * value can be specified to obtain an alignment. Inside the [-1, 1] range, the obtained alignment
- * will position the aligned size fully inside the available space, while outside the range it will
- * the aligned size will be positioned partially or completely outside.
- *
+ * An $[ALIGNMENT_REF] specified by bias: for example, a bias of -1 represents alignment
+ * to the $[START], a bias of 0 will represent centering, and a bias of 1 will represent $[END]. Any
+ * value can be specified to obtain an alignment. Inside the [-1, 1] range, the obtained
+ * alignment will position the aligned size fully inside the available space, while outside the
+ * range it will the aligned size will be positioned partially or completely outside.
+ */
+@ExcludeFromSources
+interface BiasAlignmentDocs {
+    interface ALIGNMENT_REF
+
+    interface START
+
+    interface END
+}
+
+/**
+ * @include [BiasAlignmentDocs]
+ * {@set [ALIGNMENT_REF] [Alignment]} {@set [START] start/top} {@set [END] end/bottom}
  * @see BiasAbsoluteAlignment
  * @see Alignment
  */
 @Immutable
 data class BiasAlignment(val horizontalBias: Float, val verticalBias: Float) : Alignment {
+
     override fun align(size: IntSize, space: IntSize, layoutDirection: LayoutDirection): IntOffset {
         // Convert to Px first and only round at the end, to avoid rounding twice while calculating
         // the new positions
@@ -173,12 +232,8 @@ data class BiasAlignment(val horizontalBias: Float, val verticalBias: Float) : A
     }
 
     /**
-     * An [Alignment.Horizontal] specified by bias: for example, a bias of -1 represents alignment
-     * to the start, a bias of 0 will represent centering, and a bias of 1 will represent end. Any
-     * value can be specified to obtain an alignment. Inside the [-1, 1] range, the obtained
-     * alignment will position the aligned size fully inside the available space, while outside the
-     * range it will the aligned size will be positioned partially or completely outside.
-     *
+     * @include [BiasAlignmentDocs]
+     * {@set [ALIGNMENT_REF] [Alignment.Horizontal]} {@set [START] start} {@set [END] end}
      * @see BiasAbsoluteAlignment.Horizontal
      * @see Vertical
      */
@@ -192,21 +247,16 @@ data class BiasAlignment(val horizontalBias: Float, val verticalBias: Float) : A
             return (center * (1 + resolvedBias)).fastRoundToInt()
         }
 
-        override fun plus(other: Alignment.Vertical): Alignment {
-            return when (other) {
+        override fun plus(other: Alignment.Vertical): Alignment =
+            when (other) {
                 is Vertical -> BiasAlignment(bias, other.bias)
                 else -> super.plus(other)
             }
-        }
     }
 
     /**
-     * An [Alignment.Vertical] specified by bias: for example, a bias of -1 represents alignment to
-     * the top, a bias of 0 will represent centering, and a bias of 1 will represent bottom. Any
-     * value can be specified to obtain an alignment. Inside the [-1, 1] range, the obtained
-     * alignment will position the aligned size fully inside the available space, while outside the
-     * range it will the aligned size will be positioned partially or completely outside.
-     *
+     * @include [BiasAlignmentDocs]
+     * {@set [ALIGNMENT_REF] [Alignment.Vertical]} {@set [START] top} {@set [END] bottom}
      * @see Horizontal
      */
     @Immutable
@@ -218,23 +268,18 @@ data class BiasAlignment(val horizontalBias: Float, val verticalBias: Float) : A
             return (center * (1 + bias)).fastRoundToInt()
         }
 
-        override fun plus(other: Alignment.Horizontal): Alignment {
-            return when (other) {
+        override fun plus(other: Alignment.Horizontal): Alignment =
+            when (other) {
                 is Horizontal -> BiasAlignment(other.bias, bias)
                 is BiasAbsoluteAlignment.Horizontal -> BiasAbsoluteAlignment(other.bias, bias)
                 else -> super.plus(other)
             }
-        }
     }
 }
 
 /**
- * An [Alignment] specified by bias: for example, a bias of -1 represents alignment to the left/top,
- * a bias of 0 will represent centering, and a bias of 1 will represent right/bottom. Any value can
- * be specified to obtain an alignment. Inside the [-1, 1] range, the obtained alignment will
- * position the aligned size fully inside the available space, while outside the range it will the
- * aligned size will be positioned partially or completely outside.
- *
+ * @include [BiasAlignmentDocs]
+ * {@set [ALIGNMENT_REF] [Alignment]} {@set [START] left/top} {@set [END] right/bottom}
  * @see AbsoluteAlignment
  * @see Alignment
  */
@@ -257,12 +302,8 @@ data class BiasAbsoluteAlignment(val horizontalBias: Float, val verticalBias: Fl
     }
 
     /**
-     * An [Alignment.Horizontal] specified by bias: for example, a bias of -1 represents alignment
-     * to the left, a bias of 0 will represent centering, and a bias of 1 will represent right. Any
-     * value can be specified to obtain an alignment. Inside the [-1, 1] range, the obtained
-     * alignment will position the aligned size fully inside the available space, while outside the
-     * range it will the aligned size will be positioned partially or completely outside.
-     *
+     * @include [BiasAlignmentDocs]
+     * {@set [ALIGNMENT_REF] [Alignment.Horizontal]} {@set [START] left} {@set [END] right}
      * @see BiasAlignment.Horizontal
      */
     @Immutable
@@ -278,11 +319,10 @@ data class BiasAbsoluteAlignment(val horizontalBias: Float, val verticalBias: Fl
             return (center * (1 + bias)).fastRoundToInt()
         }
 
-        override fun plus(other: Alignment.Vertical): Alignment {
-            return when (other) {
+        override fun plus(other: Alignment.Vertical): Alignment =
+            when (other) {
                 is BiasAlignment.Vertical -> BiasAbsoluteAlignment(bias, other.bias)
                 else -> super.plus(other)
             }
-        }
     }
 }
