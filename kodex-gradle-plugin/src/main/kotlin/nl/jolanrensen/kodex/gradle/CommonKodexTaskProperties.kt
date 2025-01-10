@@ -64,10 +64,10 @@ interface CommonKodexTaskProperties {
      * `"com.example.plugin.MyProcessor"`
      *
      * Defaults to:
-     * [[INCLUDE_DOC_PROCESSOR],
+     * [[COMMENT_DOC_PROCESSOR],
+     *  [INCLUDE_DOC_PROCESSOR],
      *  [INCLUDE_FILE_DOC_PROCESSOR],
      *  [ARG_DOC_PROCESSOR],
-     *  [COMMENT_DOC_PROCESSOR],
      *  [SAMPLE_DOC_PROCESSOR],
      *  [EXPORT_AS_HTML_DOC_PROCESSOR],
      *  [REMOVE_ESCAPE_CHARS_PROCESSOR]]
@@ -206,10 +206,10 @@ fun CommonKodexTaskProperties.applyConventions(project: Project, factory: Object
     processLimit.convention(10_000)
     processors.convention(
         listOf(
+            COMMENT_DOC_PROCESSOR,
             INCLUDE_DOC_PROCESSOR,
             INCLUDE_FILE_DOC_PROCESSOR,
             ARG_DOC_PROCESSOR,
-            COMMENT_DOC_PROCESSOR,
             SAMPLE_DOC_PROCESSOR,
             EXPORT_AS_HTML_DOC_PROCESSOR,
             REMOVE_ESCAPE_CHARS_PROCESSOR,

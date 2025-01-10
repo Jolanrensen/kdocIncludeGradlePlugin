@@ -9,10 +9,10 @@
     For now, the order of default processors is unconfigurable, but this will be added in the future.<br>
     The order is like the recommended order:
     <ul>
+      <li><code>COMMENT_DOC_PROCESSOR</code>: The <code>@comment</code> processor</li>
       <li><code>INCLUDE_DOC_PROCESSOR</code>: The <code>@include</code> processor</li>
       <li><code>INCLUDE_FILE_DOC_PROCESSOR</code>: The <code>@includeFile</code> processor</li>
       <li><code>ARG_DOC_PROCESSOR</code>: The <code>@set</code> and <code>@get</code> / <code>$</code> processor. This runs <code>@set</code> first and then <code>@get</code> / <code>$</code></li>
-      <li><code>COMMENT_DOC_PROCESSOR</code>: The <code>@comment</code> processor</li>
       <li><code>SAMPLE_DOC_PROCESSOR</code>: The <code>@sample</code> and <code>@sampleNoComments</code> processor</li>
       <li><code>EXPORT_AS_HTML_DOC_PROCESSOR</code>: The <code>@exportAsHtmlStart</code> and <code>@exportAsHtmlEnd</code> tags for <code>@ExportAsHtml</code></li>
       <li><code>REMOVE_ESCAPE_CHARS_PROCESSOR</code>: The processor that removes escape characters</li>
