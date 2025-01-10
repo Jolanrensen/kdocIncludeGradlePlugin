@@ -23,8 +23,11 @@ import org.jetbrains.dokka.base.signatures.KotlinSignatureUtils.annotations
 import org.jetbrains.dokka.model.AnnotationValue
 import org.jetbrains.dokka.model.Documentable
 import org.jetbrains.dokka.model.DocumentableSource
+import org.jetbrains.dokka.model.InheritedMember
+import org.jetbrains.dokka.model.ObviousMember
 import org.jetbrains.dokka.model.WithSources
 import org.jetbrains.dokka.model.WithSupertypes
+import org.jetbrains.dokka.model.properties.WithExtraProperties
 import org.jetbrains.dokka.utilities.DokkaLogger
 import java.io.File
 
@@ -45,6 +48,13 @@ fun DocumentableWrapper.Companion.createFromDokkaOrNull(
     source: DocumentableSource,
     logger: DokkaLogger,
 ): DocumentableWrapper? {
+    // skip documentables that are inherited and not actually there
+    (documentable as? WithExtraProperties<Documentable>)?.let {
+        if ((it.extra.allOfType<ObviousMember>() + it.extra.allOfType<InheritedMember>()).isNotEmpty()) {
+            return null
+        }
+    }
+
     val docComment = findClosestDocComment(
         element = source.psi as PsiNamedElement?,
         logger = logger,
