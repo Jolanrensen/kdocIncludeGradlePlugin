@@ -70,7 +70,7 @@ const val INCLUDE_DOC_PROCESSOR_PRE_SORT = "$INCLUDE_DOC_PROCESSOR.PRE_SORT"
  *
  * File A:
  * ```kotlin
- * /** NOTE: The {@getArg operation} operation is part of the public API. */
+ * /** NOTE: The {@get operation} operation is part of the public API. */
  *  internal interface ApiNote
  * ```
  *

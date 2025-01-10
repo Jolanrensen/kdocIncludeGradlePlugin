@@ -1,10 +1,5 @@
-rootProject.name = "KoDEx"
+rootProject.name = "kodex-example-gradle-project-multiplatform"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
-
-include("kodex-common")
-include("kodex-gradle-plugin")
-include("kodex-intellij-plugin")
-include("kodex-example-gradle-project-jvm")
 
 pluginManagement {
     repositories {
@@ -13,3 +8,12 @@ pluginManagement {
         mavenLocal()
     }
 }
+
+dependencyResolutionManagement {
+    repositories {
+        mavenCentral()
+    }
+}
+
+include(":common")
+include(":jvm")

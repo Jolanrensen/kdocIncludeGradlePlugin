@@ -27,3 +27,6 @@ hs_err_pid*
 /.idea/
 /kodex-gradle-plugin/src/functionalTest/resources/dataframe/
 .intellijPlatform
+/kodex-example-gradle-project-multiplatform/.gradle/
+/kodex-example-gradle-project-multiplatform/.kotlin/
+/kodex-example-gradle-project-multiplatform/build/

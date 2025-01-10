@@ -34,6 +34,8 @@ having the comments modified in a `javadoc.jar` or a Dokka HTML website).
 
 ## Example
 
+You can find a little video demo [right here](https://drive.google.com/file/d/1ddcU9bTLlj9IQ52fTei1ajeg0YfzEwkJ/view?usp=sharing).
+
 ### What you write:
 
 <div style="width: 100%;">

@@ -37,6 +37,8 @@ dependencies {
     // Gradle plugin dependencies
     shadow(gradleApi())
     shadow(gradleKotlinDsl())
+    compileOnly("org.jetbrains.kotlin.jvm:org.jetbrains.kotlin.jvm.gradle.plugin:2.0.20")
+    compileOnly("org.jetbrains.kotlin.multiplatform:org.jetbrains.kotlin.multiplatform.gradle.plugin:2.0.20")
 
     // Dokka dependencies
     val dokkaVersion = "2.0.0"
@@ -86,7 +88,7 @@ gradlePlugin {
             "tag",
             "tag-processor",
         )
-        implementationClass = "nl.jolanrensen.kodex.gradle.DocProcessorPlugin"
+        implementationClass = "nl.jolanrensen.kodex.gradle.KodexPlugin"
     }
 
     // Deprecated: Will be deprecated in favor of nl.jolanrensen.kodex

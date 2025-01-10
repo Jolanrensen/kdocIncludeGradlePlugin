@@ -1,6 +1,6 @@
 package nl.jolanrensen.kodex.gradle
 
-import nl.jolanrensen.kodex.ProcessDocsAction
+import nl.jolanrensen.kodex.RunKodexAction
 import org.gradle.workers.WorkAction
 import org.gradle.workers.WorkParameters
 import org.jetbrains.dokka.DokkaSourceSetImpl
@@ -9,14 +9,14 @@ import java.io.File
 /**
  * Process docs gradle action.
  *
- * Gradle wrapper for [ProcessDocsAction].
+ * Gradle wrapper for [RunKodexAction].
  */
-abstract class ProcessDocsGradleAction :
-    ProcessDocsAction(),
-    WorkAction<ProcessDocsGradleAction.Parameters> {
+abstract class RunKodexGradleAction :
+    RunKodexAction(),
+    WorkAction<RunKodexGradleAction.Parameters> {
 
     interface Parameters :
-        ProcessDocsAction.Parameters,
+        RunKodexAction.Parameters,
         WorkParameters {
         override var baseDir: File
         override var sources: DokkaSourceSetImpl
@@ -30,7 +30,7 @@ abstract class ProcessDocsGradleAction :
         override var htmlOutputReadOnly: Boolean
     }
 
-    override val parameters: ProcessDocsAction.Parameters
+    override val parameters: RunKodexAction.Parameters
         get() = getParameters()
 
     override fun execute() {
