@@ -154,10 +154,10 @@ class DocProcessorServiceK2(private val project: Project) {
      * rendering method should be used.
      */
     @Synchronized
-    fun getModifiedElement(originalElement: PsiElement): PsiElement? {
+    fun getModifiedElement(unmodifiedElement: PsiElement): PsiElement? {
         // Create a copy of the element, so we can modify it
         val psiElement = try {
-            originalElement.copiedWithFile()
+            unmodifiedElement.copiedWithFile()
         } catch (e: Exception) {
             null
         } ?: return null
@@ -179,7 +179,7 @@ class DocProcessorServiceK2(private val project: Project) {
 
         // If the new doc is not empty, generate a new doc element
         val newComment = try {
-            when (originalElement.programmingLanguage) {
+            when (unmodifiedElement.programmingLanguage) {
                 ProgrammingLanguage.KOTLIN ->
                     KDocElementFactory(project)
                         .createKDocFromText(newDocContent.toDocText().value)

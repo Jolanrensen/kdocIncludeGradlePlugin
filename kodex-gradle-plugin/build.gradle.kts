@@ -51,9 +51,13 @@ dependencies {
     // Use JUnit test framework for unit tests
     testImplementation(kotlin("test"))
     testImplementation("io.kotest:kotest-assertions-core:5.5.5")
+
+    // shadowed in kodex-common for intellij plugin, but we need it here
+    implementation("org.jetbrains:markdown-jvm:0.6.1")
 }
 
-tasks.withType(ShadowJar::class) {
+tasks.shadowJar {
+    dependsOn(":kodex-common:shadowJar")
     isZip64 = true
     archiveClassifier = ""
 

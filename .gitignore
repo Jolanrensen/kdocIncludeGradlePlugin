@@ -21,12 +21,11 @@
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
-/.gradle/
+**/.gradle/
 **/build/
+**/.idea/
+/.gradle/
 /build/
 /.idea/
 /kodex-gradle-plugin/src/functionalTest/resources/dataframe/
 .intellijPlatform
-/kodex-example-gradle-project-multiplatform/.gradle/
-/kodex-example-gradle-project-multiplatform/.kotlin/
-/kodex-example-gradle-project-multiplatform/build/

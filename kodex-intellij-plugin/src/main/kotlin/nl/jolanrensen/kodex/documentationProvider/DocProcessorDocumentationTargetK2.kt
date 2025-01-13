@@ -14,10 +14,10 @@ import com.intellij.platform.backend.documentation.DocumentationTarget
 import com.intellij.platform.backend.documentation.InlineDocumentation
 import com.intellij.platform.backend.documentation.InlineDocumentationProvider
 import com.intellij.platform.backend.documentation.PsiDocumentationTargetProvider
-import com.intellij.pom.Navigatable
 import com.intellij.psi.PsiDocCommentBase
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiJavaFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiTreeUtil.processElements
@@ -27,8 +27,8 @@ import nl.jolanrensen.kodex.utils.docComment
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.Nls
 import org.jetbrains.kotlin.idea.KotlinDocumentationProvider
+import org.jetbrains.kotlin.idea.KotlinLanguage
 import org.jetbrains.kotlin.idea.k2.codeinsight.quickDoc.KotlinInlineDocumentationProvider
-import org.jetbrains.kotlin.idea.k2.codeinsight.quickDoc.KotlinPsiDocumentationTargetProvider
 import org.jetbrains.kotlin.idea.kdoc.KDocRenderer.renderKDoc
 import org.jetbrains.kotlin.kdoc.psi.api.KDoc
 import org.jetbrains.kotlin.psi.KtDeclaration
@@ -50,11 +50,6 @@ class DocProcessorPsiDocumentationTargetProvider : PsiDocumentationTargetProvide
         println("DocProcessorPsiDocumentationTargetProvider (K2) created")
     }
 
-    /**
-     * Creates [org.jetbrains.kotlin.idea.k2.codeinsight.quickDoc.KotlinPsiDocumentationTargetProvider]
-     */
-    private val kotlinPsi = KotlinPsiDocumentationTargetProvider()
-
     private val serviceInstances: MutableMap<Project, DocProcessorServiceK2> = mutableMapOf()
 
     private fun getService(project: Project) =
@@ -68,17 +63,17 @@ class DocProcessorPsiDocumentationTargetProvider : PsiDocumentationTargetProvide
     override fun documentationTarget(element: PsiElement, originalElement: PsiElement?): DocumentationTarget? {
         val service = getService(element.project)
         if (!service.isEnabled) return null
+        if (!element.language.`is`(KotlinLanguage.INSTANCE)) return null
+        // show documentation based on java presentation
+        if (element.navigationElement is KtFile && originalElement?.containingFile is PsiJavaFile) return null
 
         try {
-            val modifiedElement = service.getModifiedElement(element)
-            val kotlinDocTarget = kotlinPsi.documentationTarget(modifiedElement ?: element, originalElement)
-                ?: return null
-
-            return object : DocumentationTarget by kotlinDocTarget {
-                // overriding so we can still click on references from the perspective of the original element
-                override val navigatable: Navigatable?
-                    get() = element as? Navigatable
-            }
+            val modifiedElement = service.getModifiedElement(element) ?: return null
+            val kotlinDocTarget = createKotlinDocumentationTarget(
+                element = modifiedElement,
+                originalElement = originalElement,
+            )
+            return kotlinDocTarget
         } catch (_: ProcessCanceledException) {
             return null
         } catch (_: CancellationException) {
@@ -89,6 +84,90 @@ class DocProcessorPsiDocumentationTargetProvider : PsiDocumentationTargetProvide
         }
     }
 }
+
+/**
+ * Instantiates the internal
+ * [org.jetbrains.kotlin.idea.k2.codeinsight.quickDoc.KotlinDocumentationTarget] class
+ */
+private fun createKotlinDocumentationTarget(element: PsiElement, originalElement: PsiElement?): DocumentationTarget {
+    val kotlinDocumentationTargetClass = Class.forName(
+        "org.jetbrains.kotlin.idea.k2.codeinsight.quickDoc.KotlinDocumentationTarget",
+    )
+    val constructor = kotlinDocumentationTargetClass.constructors.first()
+    constructor.isAccessible = true
+    return constructor.newInstance(element, originalElement) as DocumentationTarget
+}
+
+// alternative approach to createKotlinDocumentationTarget which works
+// except for clicking links in the documentation
+//
+// internal class KodexDocumentationTarget(
+//    val element: PsiElement,
+//    private val originalElement: PsiElement?,
+//    private val service: DocProcessorServiceK2,
+//    private val pointer: Pointer<KodexDocumentationTarget> = run {
+//        val elementPtr = element.createSmartPointer()
+//        val originalElementPtr = originalElement?.createSmartPointer()
+//        Pointer {
+//            KodexDocumentationTarget(
+//                element = elementPtr.dereference() ?: return@Pointer null,
+//                originalElement = originalElementPtr?.let { it.dereference() ?: return@Pointer null },
+//                service = service,
+//            )
+//        }
+//    },
+// ) : DocumentationTarget {
+//
+//    companion object {
+//        /**
+//         * Reflection-based approach to call into [org.jetbrains.kotlin.idea.k2.codeinsight.quickDoc.computeLocalDocumentation].
+//         */
+//        private val computeLocalDocumentation: (
+//            element: PsiElement,
+//            originalElement: PsiElement?,
+//            quickNavigation: Boolean,
+//        ) -> String? = run {
+//            val klass = Class.forName(
+//                "org.jetbrains.kotlin.idea.k2.codeinsight.quickDoc.KotlinDocumentationTargetKt",
+//            )
+//            val function = klass.methods.find { "computeLocalDocumentation" in it.name }
+//                ?: error("Couldn't find computeLocalDocumentation")
+//            function.isAccessible = true
+//
+//            return@run { element, originalElement, quickNavigation ->
+//                function.invoke(null, element, originalElement, quickNavigation) as String?
+//            }
+//        }
+//    }
+//
+//    private val modifiedElement = service.getModifiedElement(element)!!
+//
+//    override fun createPointer(): Pointer<out DocumentationTarget> = pointer
+//
+//    override fun computePresentation(): TargetPresentation = targetPresentation(element)
+//
+//    override fun computeDocumentationHint(): String? =
+//        computeLocalDocumentation(
+//            modifiedElement,
+// //            element,
+//            originalElement,
+//            true,
+//        )
+//
+//    override val navigatable: Navigatable?
+//        get() = modifiedElement as? Navigatable
+//
+//    override fun computeDocumentation(): DocumentationResult? {
+//        @Suppress("HardCodedStringLiteral")
+//        val html = computeLocalDocumentation(
+//            modifiedElement,
+// //            element,
+//            originalElement,
+//            false,
+//        ) ?: return null
+//        return DocumentationResult.documentation(html)
+//    }
+// }
 
 /**
  * inline, used for rendering single doc comment in file, does not work for multiple, Issue #54,
@@ -112,25 +191,18 @@ class DocProcessorInlineDocumentationProvider : InlineDocumentationProvider {
         override fun getDocumentationOwnerRange(): TextRange? = originalOwner.textRange
 
         override fun renderText(): String? {
-            modifiedDocumentation as? KDoc ?: return null
+            val docComment = modifiedDocumentation as? KDoc ?: return null
             val result = buildString {
                 renderKDoc(
-                    contentTag = modifiedDocumentation.getDefaultSection(),
-                    sections = modifiedDocumentation.getAllSections(),
+                    contentTag = docComment.getDefaultSection(),
+                    sections = docComment.getAllSections(),
                 )
             }
             return JavaDocExternalFilter.filterInternalDocInfo(result)
         }
 
-        override fun getOwnerTarget(): DocumentationTarget {
-            val kotlinDocumentationTargetClass = Class.forName(
-                "org.jetbrains.kotlin.idea.k2.codeinsight.quickDoc.KotlinDocumentationTarget",
-            )
-            val constructor = kotlinDocumentationTargetClass.constructors.first()
-            constructor.isAccessible = true
-            val target = constructor.newInstance(originalOwner, originalOwner) as DocumentationTarget
-            return target
-        }
+        override fun getOwnerTarget(): DocumentationTarget =
+            createKotlinDocumentationTarget(originalOwner, originalOwner)
     }
 
     private val serviceInstances: MutableMap<Project, DocProcessorServiceK2> = mutableMapOf()

@@ -1,3 +1,4 @@
+import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.intellij.platform.gradle.tasks.RunIdeTask
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
@@ -6,13 +7,12 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     id("java")
     kotlin("jvm")
-    id("org.jetbrains.intellij.platform") version "2.0.0"
-    id("com.github.johnrengelman.shadow")
+    id("org.jetbrains.intellij.platform") version "2.2.1"
     id("org.jlleitschuh.gradle.ktlint")
 }
 
 group = "nl.jolanrensen.kodex"
-version = "0.4.2-SNAPSHOT"
+version = "0.4.2-beta2"
 
 repositories {
     mavenCentral()
@@ -34,14 +34,22 @@ intellijPlatform {
     pluginConfiguration {
         name = "/** KoDEx */: Kotlin Documentation Extensions"
         ideaVersion {
-            sinceBuild = "241"
+            sinceBuild = "242"
             untilBuild = "243.*"
+        }
+    }
+    pluginVerification {
+        cliPath.set(file("verifier-all.jar"))
+
+        ides {
+            ide(IntelliJPlatformType.IntellijIdeaCommunity, "2024.3")
+            recommended()
         }
     }
 }
 
 dependencies {
-    api(project(":kodex-common"))
+    implementation(project(":kodex-common"))
 
     // Use JUnit test framework for unit tests
     testImplementation(kotlin("test"))
@@ -54,10 +62,10 @@ dependencies {
             "com.intellij.java",
         )
         zipSigner()
-        instrumentationTools()
         testFramework(TestFrameworkType.Platform)
     }
 }
+
 tasks.named<RunIdeTask>("runIde") {
     jvmArgumentProviders += CommandLineArgumentProvider {
         listOf("-Didea.kotlin.plugin.use.k2=true")
@@ -69,11 +77,14 @@ tasks.getByName<Test>("test") {
 }
 
 tasks.withType<KotlinCompile> {
-    compilerOptions.jvmTarget = JvmTarget.JVM_21
+    compilerOptions {
+        jvmTarget = JvmTarget.JVM_21
+    }
 }
 
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(21)
+        sourceCompatibility = JavaVersion.VERSION_21
     }
 }
