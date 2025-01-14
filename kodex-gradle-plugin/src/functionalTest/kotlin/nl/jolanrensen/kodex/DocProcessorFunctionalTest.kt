@@ -100,7 +100,7 @@ abstract class DocProcessorFunctionalTest(name: String) {
         
         val kotlinMainSources = kotlin.sourceSets.main.get().kotlin.sourceDirectories
         
-        val processKdocMain by creatingProcessDocTask(sources = kotlinMainSources) {
+        val processKdocMain by creatingRunKodexTask(sources = kotlinMainSources) {
             
             dependencies {
                 ${
@@ -114,7 +114,7 @@ abstract class DocProcessorFunctionalTest(name: String) {
         }
             }
            
-            arguments += ARG_DOC_PROCESSOR_LOG_NOT_FOUND to false
+            arguments.put(ARG_DOC_PROCESSOR_LOG_NOT_FOUND, false)
             
             processors = listOf(${processors.joinToString()})
         }

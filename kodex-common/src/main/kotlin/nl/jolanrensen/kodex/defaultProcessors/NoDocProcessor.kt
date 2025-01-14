@@ -25,5 +25,5 @@ class NoDocProcessor : DocProcessor() {
                         isModified = true,
                     )
                 }
-            }.toDocumentablesByPath()
+            }.toDocumentablesByPath(documentablesByPath.loadedProcessors)
 }

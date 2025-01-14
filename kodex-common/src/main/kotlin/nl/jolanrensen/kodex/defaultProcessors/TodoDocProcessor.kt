@@ -29,5 +29,5 @@ class TodoDocProcessor : DocProcessor() {
                         it
                     }
                 }
-            }.toDocumentablesByPath()
+            }.toDocumentablesByPath(documentablesByPath.loadedProcessors)
 }

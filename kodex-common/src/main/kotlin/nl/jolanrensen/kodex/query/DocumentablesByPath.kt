@@ -4,6 +4,7 @@ import nl.jolanrensen.kodex.documentableWrapper.DocumentableWrapper
 import nl.jolanrensen.kodex.documentableWrapper.MutableDocumentableWrapper
 import nl.jolanrensen.kodex.documentableWrapper.getAllFullPathsFromHereForTargetPath
 import nl.jolanrensen.kodex.documentableWrapper.toMutable
+import nl.jolanrensen.kodex.processor.DocProcessor
 import java.util.UUID
 
 typealias DocumentableWrapperFilter = (DocumentableWrapper) -> Boolean
@@ -28,6 +29,8 @@ interface DocumentablesByPath {
      * but `true` for the Gradle plugin.
      */
     val needToQueryAllPaths: Boolean
+
+    val loadedProcessors: List<DocProcessor>
 
     /**
      * Returns a list of [DocumentableWrapper]s for the given [path].
@@ -68,12 +71,13 @@ interface DocumentablesByPath {
     ): DocumentablesByPath
 
     companion object {
-        val EMPTY: DocumentablesByPath = DocumentablesByPathFromMap(emptyMap())
+        fun of(map: Map<String, List<DocumentableWrapper>>, loadedProcessors: List<DocProcessor>): DocumentablesByPath =
+            DocumentablesByPathFromMap(map, loadedProcessors)
 
-        fun of(map: Map<String, List<DocumentableWrapper>>): DocumentablesByPath = DocumentablesByPathFromMap(map)
-
-        fun of(map: Map<String, List<MutableDocumentableWrapper>>): MutableDocumentablesByPath =
-            MutableDocumentablesByPathFromMap(map)
+        fun of(
+            map: Map<String, List<MutableDocumentableWrapper>>,
+            loadedProcessors: List<DocProcessor>,
+        ): MutableDocumentablesByPath = MutableDocumentablesByPathFromMap(map, loadedProcessors)
     }
 }
 
@@ -116,10 +120,13 @@ fun <T : DocumentablesByPath> T.withoutFilters(): T =
         else -> this.withFilters(NO_FILTER, NO_FILTER) as T
     }
 
-fun Map<String, List<DocumentableWrapper>>.toDocumentablesByPath(): DocumentablesByPath = DocumentablesByPath.of(this)
+fun Map<String, List<DocumentableWrapper>>.toDocumentablesByPath(
+    loadedProcessors: List<DocProcessor>,
+): DocumentablesByPath = DocumentablesByPath.of(this, loadedProcessors)
 
-fun Iterable<Pair<String, List<DocumentableWrapper>>>.toDocumentablesByPath(): DocumentablesByPath =
-    toMap().toDocumentablesByPath()
+fun Iterable<Pair<String, List<DocumentableWrapper>>>.toDocumentablesByPath(
+    loadedProcessors: List<DocProcessor>,
+): DocumentablesByPath = toMap().toDocumentablesByPath(loadedProcessors)
 
 /**
  * Converts a [Map]<[String], [List]<[DocumentableWrapper]>> to

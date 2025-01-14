@@ -14,6 +14,7 @@ import com.intellij.psi.PsiElementFactory
 import com.intellij.psi.PsiPolyVariantReference
 import nl.jolanrensen.kodex.Mode
 import nl.jolanrensen.kodex.createFromIntellijOrNull
+import nl.jolanrensen.kodex.defaultProcessors.IncludeDocProcessor
 import nl.jolanrensen.kodex.docContent.DocContent
 import nl.jolanrensen.kodex.docContent.asDocContent
 import nl.jolanrensen.kodex.docContent.toDocText
@@ -206,6 +207,7 @@ class DocProcessorServiceK2(private val project: Project) {
 
     private val documentableCache = DocumentablesByPathWithCache(
         processLimit = processLimit,
+        loadedProcessors = getLoadedProcessors(),
         logDebug = { logger.debug(null, it) },
         queryNew = { context, link ->
             query(context.getOrigin(), link)
@@ -306,7 +308,10 @@ class DocProcessorServiceK2(private val project: Project) {
         val processors = getLoadedProcessors().toMutableList()
 
         // for cache collecting after include doc processor
-        processors.add(1, PostIncludeDocProcessorCacheCollector(documentableCache))
+        processors.add(
+            processors.indexOfFirst { it is IncludeDocProcessor } + 1,
+            PostIncludeDocProcessorCacheCollector(documentableCache),
+        )
 
         // Run all processors
         val modifiedDocumentables = processors.fold(sourceDocsByPath) { acc, processor ->

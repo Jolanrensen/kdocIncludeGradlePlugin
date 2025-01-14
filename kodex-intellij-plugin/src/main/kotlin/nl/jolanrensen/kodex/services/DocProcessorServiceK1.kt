@@ -168,6 +168,7 @@ class DocProcessorServiceK1(private val project: Project) {
 
     private val documentableCache = DocumentablesByPathWithCache(
         processLimit = processLimit,
+        loadedProcessors = getLoadedProcessors(),
         logDebug = { logger.debug(null, it) },
         queryNew = { context, link ->
             query(context.getOrigin(), link)
