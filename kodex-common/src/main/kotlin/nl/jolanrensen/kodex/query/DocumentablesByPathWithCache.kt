@@ -1,18 +1,24 @@
 package nl.jolanrensen.kodex.query
 
 import nl.jolanrensen.kodex.defaultProcessors.IncludeDocAnalyzer
+import nl.jolanrensen.kodex.defaultProcessors.IncludeDocProcessor
+import nl.jolanrensen.kodex.defaultProcessors.IncludeFileDocProcessor
+import nl.jolanrensen.kodex.defaultProcessors.SampleDocProcessor
 import nl.jolanrensen.kodex.docContent.DocContent
 import nl.jolanrensen.kodex.documentableWrapper.DocumentableWrapper
 import nl.jolanrensen.kodex.documentableWrapper.MutableDocumentableWrapper
 import nl.jolanrensen.kodex.documentableWrapper.getDocHashcode
 import nl.jolanrensen.kodex.documentableWrapper.toMutable
-import org.jgrapht.graph.SimpleDirectedGraph
+import nl.jolanrensen.kodex.processor.DocProcessor
+import nl.jolanrensen.kodex.utils.Edge
+import nl.jolanrensen.kodex.utils.emptySimpleDirectedGraph
 import org.jgrapht.traverse.BreadthFirstIterator
 import org.jgrapht.traverse.TopologicalOrderIterator
 import java.util.UUID
 
 open class DocumentablesByPathWithCache(
     val processLimit: Int,
+    override val loadedProcessors: List<DocProcessor>,
     val queryNew: (context: DocumentableWrapper, link: String) -> List<DocumentableWrapper>?,
     val logDebug: (message: () -> String) -> Unit,
 ) : DocumentablesByPath,
@@ -23,8 +29,7 @@ open class DocumentablesByPathWithCache(
     override var documentablesToProcessFilter: DocumentableWrapperFilter = NO_FILTER
 
     // graph representing the dependencies between documentables
-    @Suppress("UNCHECKED_CAST")
-    private var dependencyGraph = SimpleDirectedGraph<UUID, Edge<UUID>>(Edge::class.java as Class<out Edge<UUID>>)
+    private var dependencyGraph = emptySimpleDirectedGraph<UUID>()
 
     // holds the hashcodes of the source of the documentables, to be updated each time a documentable is queried
     private val docContentSourceHashCodeCache: MutableMap<UUID, Int> = mutableMapOf()
@@ -62,6 +67,24 @@ open class DocumentablesByPathWithCache(
         postIncludeDocContentCache[documentable.identifier] = documentable.docContent
     }
 
+    private val includeDocProcessorLoaded by lazy { loadedProcessors.any { it is IncludeDocProcessor } }
+    private val sampleDocProcessorLoaded by lazy { loadedProcessors.any { it is SampleDocProcessor } }
+    private val includeFileDocProcessorLoaded by lazy { loadedProcessors.any { it is IncludeFileDocProcessor } }
+
+    // TODO make generic
+    private fun DocumentableWrapper.hasExternalDependency(): Boolean {
+        if (sampleDocProcessorLoaded) {
+            val sampleDocProcessor = loadedProcessors.filterIsInstance<SampleDocProcessor>().single()
+            if (sampleDocProcessor.providesTags.any { it in this.tags }) return true
+        }
+        if (includeFileDocProcessorLoaded) {
+            val includeFileDocProcessor = loadedProcessors.filterIsInstance<IncludeFileDocProcessor>().single()
+            if (includeFileDocProcessor.providesTags.any { it in this.tags }) return true
+        }
+
+        return false
+    }
+
     /**
      * we set a context and a documentable to process
      * returns whether it needs a rebuild
@@ -76,12 +99,18 @@ open class DocumentablesByPathWithCache(
         this.queryCache = mutableMapOf()
 
         // build local dependency graph from docToProcess and update the global dependencyGraph
-        val graph = IncludeDocAnalyzer.getAnalyzedResult(
-            // catch circular dependencies
-            processLimit = processLimit - 1,
-            documentablesByPath = this,
-            analyzeQueriesToo = true,
-        )
+        val graph =
+            if (includeDocProcessorLoaded) {
+                IncludeDocAnalyzer.getAnalyzedResult(
+                    // catch circular dependencies
+                    processLimit = processLimit - 1,
+                    documentablesByPath = this,
+                    analyzeQueriesToo = true,
+                )
+            } else {
+                // if @include is not loaded, supply an empty graph
+                emptySimpleDirectedGraph()
+            }
         for (vertex in graph.vertexSet()) {
             if (!dependencyGraph.containsVertex(vertex.identifier)) {
                 dependencyGraph.addVertex(vertex.identifier)
@@ -179,11 +208,16 @@ open class DocumentablesByPathWithCache(
         return res
     }
 
+//    private val loadedProcessors = load
+
     private fun needsRebuild(doc: DocumentableWrapper): Boolean {
         // if source has changed, return true
         val sourceHasChanged = doc.getDocHashcode() != docContentSourceHashCodeCache[doc.identifier]
         val doesNotContainResultCache = docContentResultCache[doc.identifier] == null
         val doesNotContainVertex = !dependencyGraph.containsVertex(doc.identifier)
+
+        // also return true if it contains a @sample or @includeFile tag as we cannot track changes to those for now
+        val hasExternalDependency = doc.hasExternalDependency()
 
         if (doesNotContainVertex) dependencyGraph.addVertex(doc.identifier)
 
@@ -199,7 +233,8 @@ open class DocumentablesByPathWithCache(
         val needsRebuild = sourceHasChanged ||
             doesNotContainVertex ||
             doesNotContainResultCache ||
-            dependenciesNeedsRebuild
+            dependenciesNeedsRebuild ||
+            hasExternalDependency
 
         if (needsRebuild) {
             // update the caches

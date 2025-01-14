@@ -67,7 +67,7 @@ class PluginExtensionTest : DocProcessorFunctionalTest("extension") {
                             isModified = true,
                         )
                     }
-                }.toDocumentablesByPath()
+                }.toDocumentablesByPath(documentablesByPath.loadedProcessors)
         }
     """.trimIndent()
 

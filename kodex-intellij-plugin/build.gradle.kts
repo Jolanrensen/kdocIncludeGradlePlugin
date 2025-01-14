@@ -43,6 +43,7 @@ intellijPlatform {
 
         ides {
             ide(IntelliJPlatformType.IntellijIdeaCommunity, "2024.3")
+            ide(IntelliJPlatformType.IntellijIdeaUltimate, "2024.3")
             recommended()
         }
     }
@@ -56,10 +57,11 @@ dependencies {
     testImplementation("io.kotest:kotest-assertions-core:5.5.5")
 
     intellijPlatform {
-        intellijIdeaCommunity("2024.3")
+        intellijIdeaCommunity("2024.3.1.1")
         bundledPlugins(
             "org.jetbrains.kotlin",
             "com.intellij.java",
+            "org.intellij.plugins.markdown",
         )
         zipSigner()
         testFramework(TestFrameworkType.Platform)

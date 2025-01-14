@@ -11,6 +11,7 @@ import nl.jolanrensen.kodex.documentableWrapper.getDocContentForHtmlRange
 import nl.jolanrensen.kodex.gradle.RunKodexGradleAction
 import nl.jolanrensen.kodex.gradle.lifecycle
 import nl.jolanrensen.kodex.html.renderToHtml
+import nl.jolanrensen.kodex.processor.DocProcessor
 import nl.jolanrensen.kodex.processor.findProcessors
 import nl.jolanrensen.kodex.query.DocumentablesByPath
 import nl.jolanrensen.kodex.utils.fullyQualifiedExtensionPath
@@ -85,7 +86,7 @@ abstract class RunKodexAction {
         // Run all processors
         val modifiedDocumentables =
             processors
-                .fold(sourceDocs) { acc, processor ->
+                .fold(sourceDocs(processors)) { acc, processor ->
                     log.lifecycle { "Running processor: ${processor::class.qualifiedName}..." }
                     val (docs, time) = measureTimedValue {
                         processor.processSafely(processLimit = parameters.processLimit, documentablesByPath = acc)
@@ -114,7 +115,7 @@ abstract class RunKodexAction {
         exportHtmls(modifiedDocumentables.values.flatten())
     }
 
-    private fun analyseSourcesWithDokka(): DocumentablesByPath {
+    private fun analyseSourcesWithDokka(): (List<DocProcessor>) -> DocumentablesByPath {
         // initialize dokka with the sources
         val configuration = DokkaConfigurationImpl(
             sourceSets = listOf(parameters.sources),
@@ -188,7 +189,7 @@ abstract class RunKodexAction {
 
         log.info { "Found ${documentablesPerPath.size} source docs: $documentablesPerPath" }
 
-        return DocumentablesByPath.of(documentablesPerPath)
+        return { loadedProcessors -> DocumentablesByPath.of(documentablesPerPath, loadedProcessors) }
     }
 
     private fun getModifiedDocumentablesPerFile(

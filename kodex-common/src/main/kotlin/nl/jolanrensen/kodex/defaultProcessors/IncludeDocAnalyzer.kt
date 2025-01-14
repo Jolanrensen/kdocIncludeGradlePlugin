@@ -4,8 +4,9 @@ import nl.jolanrensen.kodex.documentableWrapper.DocumentableWrapper
 import nl.jolanrensen.kodex.documentableWrapper.queryDocumentables
 import nl.jolanrensen.kodex.processor.TagDocAnalyser
 import nl.jolanrensen.kodex.query.DocumentablesByPath
-import nl.jolanrensen.kodex.query.Edge
 import nl.jolanrensen.kodex.query.withoutFilters
+import nl.jolanrensen.kodex.utils.Edge
+import nl.jolanrensen.kodex.utils.buildSimpleDirectedGraph
 import nl.jolanrensen.kodex.utils.decodeCallableTarget
 import nl.jolanrensen.kodex.utils.getTagArguments
 import org.jgrapht.graph.SimpleDirectedGraph
@@ -72,13 +73,11 @@ internal class IncludeDocAnalyzer :
     override fun getAnalyzedResult(): SimpleDirectedGraph<DocumentableWrapper, Edge<DocumentableWrapper>> {
         require(hasRun) { "analyze must be called before getAnalyzedResult" }
 
-        val dag = SimpleDirectedGraph.createBuilder<DocumentableWrapper, _>(
-            Edge::class.java as Class<out Edge<DocumentableWrapper>>,
-        ).apply {
+        val dag = buildSimpleDirectedGraph {
             for (dep in dependencies) {
                 addEdge(dep.from, dep.to, dep)
             }
-        }.build()
+        }
 
         return dag
     }

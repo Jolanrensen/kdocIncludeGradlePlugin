@@ -2,9 +2,11 @@ package nl.jolanrensen.kodex.query
 
 import nl.jolanrensen.kodex.documentableWrapper.DocumentableWrapper
 import nl.jolanrensen.kodex.documentableWrapper.MutableDocumentableWrapper
+import nl.jolanrensen.kodex.processor.DocProcessor
 
 open class DocumentablesByPathFromMap(
     private val allDocs: Map<String, List<DocumentableWrapper>>,
+    override val loadedProcessors: List<DocProcessor>,
     final override val queryFilter: DocumentableWrapperFilter = NO_FILTER,
     final override val documentablesToProcessFilter: DocumentableWrapperFilter = NO_FILTER,
 ) : DocumentablesByPath {
@@ -39,6 +41,7 @@ open class DocumentablesByPathFromMap(
         this as? MutableDocumentablesByPath ?: MutableDocumentablesByPathFromMap(
             allDocs = allDocs.toMutable(),
             queryFilter = queryFilter,
+            loadedProcessors = loadedProcessors,
             documentablesToProcessFilter = documentablesToProcessFilter,
         )
 
@@ -48,6 +51,7 @@ open class DocumentablesByPathFromMap(
 
             else -> DocumentablesByPathFromMap(
                 allDocs = allDocs,
+                loadedProcessors = loadedProcessors,
                 queryFilter = queryFilter,
                 documentablesToProcessFilter = documentablesToProcessFilter,
             )
@@ -60,6 +64,7 @@ open class DocumentablesByPathFromMap(
             else -> DocumentablesByPathFromMap(
                 allDocs = allDocs,
                 queryFilter = queryFilter,
+                loadedProcessors = loadedProcessors,
                 documentablesToProcessFilter = docsToProcessFilter,
             )
         }
@@ -74,6 +79,7 @@ open class DocumentablesByPathFromMap(
             else -> DocumentablesByPathFromMap(
                 allDocs = allDocs,
                 queryFilter = queryFilter,
+                loadedProcessors = loadedProcessors,
                 documentablesToProcessFilter = docsToProcessFilter,
             )
         }
@@ -81,6 +87,7 @@ open class DocumentablesByPathFromMap(
 
 class MutableDocumentablesByPathFromMap(
     private val allDocs: Map<String, List<MutableDocumentableWrapper>>,
+    override val loadedProcessors: List<DocProcessor>,
     override val queryFilter: DocumentableWrapperFilter = NO_FILTER,
     override val documentablesToProcessFilter: DocumentableWrapperFilter = NO_FILTER,
 ) : MutableDocumentablesByPath {
@@ -120,6 +127,7 @@ class MutableDocumentablesByPathFromMap(
             else -> MutableDocumentablesByPathFromMap(
                 allDocs = allDocs,
                 queryFilter = queryFilter,
+                loadedProcessors = loadedProcessors,
                 documentablesToProcessFilter = documentablesToProcessFilter,
             )
         }
@@ -131,6 +139,7 @@ class MutableDocumentablesByPathFromMap(
             else -> MutableDocumentablesByPathFromMap(
                 allDocs = allDocs,
                 queryFilter = queryFilter,
+                loadedProcessors = loadedProcessors,
                 documentablesToProcessFilter = docsToProcessFilter,
             )
         }
@@ -145,6 +154,7 @@ class MutableDocumentablesByPathFromMap(
             else -> MutableDocumentablesByPathFromMap(
                 allDocs = allDocs,
                 queryFilter = queryFilter,
+                loadedProcessors = loadedProcessors,
                 documentablesToProcessFilter = docsToProcessFilter,
             )
         }
