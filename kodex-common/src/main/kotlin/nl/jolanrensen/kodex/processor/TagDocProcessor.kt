@@ -360,6 +360,7 @@ abstract class TagDocProcessor : DocProcessor() {
         tagName: String,
         numberOfArguments: Int,
         type: HighlightType,
+        related: List<HighlightInfo> = emptyList(),
     ): HighlightInfo? {
         val line = docContent.value.substring(rangeInDocContent)
         val (_, rangeInLine) = line.getTagArgumentWithRangeByIndexOrNull(
@@ -372,6 +373,7 @@ abstract class TagDocProcessor : DocProcessor() {
             range = rangeInLine.first + rangeInDocContent.first..rangeInLine.last + rangeInDocContent.first,
             type = type,
             tag = tagName,
+            related = related,
         )
     }
 
@@ -405,6 +407,15 @@ abstract class TagDocProcessor : DocProcessor() {
             // Linking brackets
             this += leftBracket.copy(related = listOf(rightBracket))
             this += rightBracket.copy(related = listOf(leftBracket))
+
+            // background
+            this += buildHighlightInfo(
+                rangeInDocContent,
+                type = HighlightType.BACKGROUND,
+                tag = tagName,
+                related = listOf(leftBracket, rightBracket),
+                addSelfToRelated = true,
+            )
         }
 
     protected open fun getHighlightsForBlockTag(
@@ -418,6 +429,14 @@ abstract class TagDocProcessor : DocProcessor() {
                 range = rangeInDocContent.first..(rangeInDocContent.first + tagName.length),
                 type = HighlightType.TAG,
                 tag = tagName,
+            )
+
+            // background
+            this += buildHighlightInfo(
+                rangeInDocContent,
+                type = HighlightType.BACKGROUND,
+                tag = tagName,
+                addSelfToRelated = true,
             )
         }
 

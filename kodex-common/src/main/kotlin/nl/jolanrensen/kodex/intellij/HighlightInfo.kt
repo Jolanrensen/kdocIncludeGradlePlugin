@@ -7,7 +7,7 @@ import nl.jolanrensen.kodex.utils.mapToRanges
  *
  * @param range The range of the highlight in the [DocContent] (or [DocText] if desired).
  * @param type The type of the highlight, [HighlightType].
- * @param related Other highlights that are related to this one, like matching brackets.
+ * @param related Other highlights that are related to this one, like matching brackets or backgrounds.
  *   When this [range] is touched, it and the [related] ranges will pop visually.
  * @param tagProcessorName The name of the tag processor that created this highlight.
  * @param description An optional description of the tag processor that created this highlight.
@@ -43,6 +43,12 @@ enum class HighlightType {
 
     /** for `@comment` in comments, will render like block-comments + bold, italic, underscore */
     COMMENT_TAG,
+
+    /**
+     * Will color the background of the range but only when the cursor is touching it.
+     * Make sure to add itself to [HighlightInfo.related] so it survives mapping.
+     */
+    BACKGROUND,
 }
 
 /**
@@ -51,14 +57,34 @@ enum class HighlightType {
  * Can split 1 [HighlightInfo] into multiple [HighlightInfo]s if the range is split.
  * Does not join back.
  */
-fun List<HighlightInfo>.applyMapping(mapping: (Int) -> Int): List<HighlightInfo> =
+fun List<HighlightInfo>.applyMappingFlattening(mapping: (Int) -> Int): List<HighlightInfo> =
     flatMap {
         it.range.mapToRanges(mapping)
             .map { range ->
                 HighlightInfo(
                     range = range,
                     type = it.type,
-                    related = it.related.applyMapping(mapping),
+                    related = it.related.applyMappingFlattening(mapping),
+                    tagProcessorName = it.tagProcessorName,
+                    description = it.description,
+                )
+            }
+    }
+
+/**
+ * Applies a mapping to the ranges of the highlights.
+ *
+ * Can split 1 [HighlightInfo] into multiple [HighlightInfo]s if the range is split.
+ * Does not join back.
+ */
+fun List<HighlightInfo>.applyMapping(mapping: (Int) -> Int): List<List<HighlightInfo>> =
+    map {
+        it.range.mapToRanges(mapping)
+            .map { range ->
+                HighlightInfo(
+                    range = range,
+                    type = it.type,
+                    related = it.related.applyMappingFlattening(mapping),
                     tagProcessorName = it.tagProcessorName,
                     description = it.description,
                 )

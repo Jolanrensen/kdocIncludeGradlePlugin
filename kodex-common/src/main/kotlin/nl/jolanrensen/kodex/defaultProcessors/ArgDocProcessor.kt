@@ -467,6 +467,13 @@ class ArgDocProcessor : TagDocProcessor() {
                     type = HighlightType.TAG_VALUE,
                 )?.let(::add)
             }
+
+            this += buildHighlightInfo(
+                range = rangeInDocContent,
+                type = HighlightType.BACKGROUND,
+                tag = tagName,
+                addSelfToRelated = true,
+            )
         }
 
     override fun getHighlightsFor(docContent: DocContent): List<HighlightInfo> =
@@ -525,6 +532,15 @@ class ArgDocProcessor : TagDocProcessor() {
                 // link left and right brackets
                 this += left.copy(related = listOf(right))
                 this += right.copy(related = listOf(left))
+
+                // background
+                this += buildHighlightInfo(
+                    range = range,
+                    type = HighlightType.BACKGROUND,
+                    tag = "\${}",
+                    related = listOf(left, right),
+                    addSelfToRelated = true,
+                )
             }
 
             // $tags=...
@@ -570,6 +586,14 @@ class ArgDocProcessor : TagDocProcessor() {
                         tag = "$",
                     )
                 }
+
+                // background
+                this += buildHighlightInfo(
+                    range = range,
+                    type = HighlightType.BACKGROUND,
+                    tag = "$",
+                    addSelfToRelated = true,
+                )
             }
         }
 }

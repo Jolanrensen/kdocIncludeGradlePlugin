@@ -99,6 +99,15 @@ class CommentDocProcessor : TagDocProcessor() {
             // link left and right brackets
             this += leftBracket.copy(related = listOf(rightBracket))
             this += rightBracket.copy(related = listOf(leftBracket))
+
+            // background
+            this += buildHighlightInfo(
+                rangeInDocContent,
+                type = HighlightType.BACKGROUND,
+                tag = tagName,
+                related = listOf(leftBracket, rightBracket),
+                addSelfToRelated = true,
+            )
         }
 
     override fun getHighlightsForBlockTag(
@@ -119,6 +128,14 @@ class CommentDocProcessor : TagDocProcessor() {
                 range = (rangeInDocContent.first + 1 + tagName.length)..rangeInDocContent.last,
                 type = HighlightType.COMMENT,
                 tag = TAG,
+            )
+
+            // background
+            this += buildHighlightInfo(
+                rangeInDocContent,
+                type = HighlightType.BACKGROUND,
+                tag = tagName,
+                addSelfToRelated = true,
             )
         }
 }

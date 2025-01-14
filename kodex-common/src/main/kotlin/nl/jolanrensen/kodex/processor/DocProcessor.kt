@@ -101,11 +101,23 @@ abstract class DocProcessor : Serializable {
                 }${it.tailText}"
             } ?: "",
         related: List<HighlightInfo> = emptyList(),
+        addSelfToRelated: Boolean = false,
     ): HighlightInfo =
         HighlightInfo(
             range = range,
             type = type,
-            related = related,
+            related = buildList {
+                addAll(related)
+                // so mapping it will put itself in the related list
+                if (addSelfToRelated) {
+                    this += HighlightInfo(
+                        range = range,
+                        type = type,
+                        description = description,
+                        tagProcessorName = name,
+                    )
+                }
+            },
             description = description,
             tagProcessorName = name,
         )
