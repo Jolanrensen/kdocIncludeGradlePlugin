@@ -372,7 +372,6 @@ abstract class TagDocProcessor : DocProcessor() {
         return buildHighlightInfo(
             range = rangeInLine.first + rangeInDocContent.first..rangeInLine.last + rangeInDocContent.first,
             type = type,
-            tag = tagName,
             related = related,
         )
     }
@@ -384,21 +383,21 @@ abstract class TagDocProcessor : DocProcessor() {
     ): List<HighlightInfo> =
         buildList {
             // Left '{'
-            val leftBracket = buildHighlightInfo(
+            val leftBracket = buildHighlightInfoWithDescription(
                 range = rangeInDocContent.first..rangeInDocContent.first,
                 type = HighlightType.BRACKET,
                 tag = tagName,
             )
 
             // '@' and tag name
-            this += buildHighlightInfo(
+            this += buildHighlightInfoWithDescription(
                 range = (rangeInDocContent.first + 1)..(rangeInDocContent.first + 1 + tagName.length),
                 type = HighlightType.TAG,
                 tag = tagName,
             )
 
             // Right '}'
-            val rightBracket = buildHighlightInfo(
+            val rightBracket = buildHighlightInfoWithDescription(
                 range = rangeInDocContent.last..rangeInDocContent.last,
                 type = HighlightType.BRACKET,
                 tag = tagName,
@@ -412,7 +411,6 @@ abstract class TagDocProcessor : DocProcessor() {
             this += buildHighlightInfo(
                 rangeInDocContent,
                 type = HighlightType.BACKGROUND,
-                tag = tagName,
                 related = listOf(leftBracket, rightBracket),
                 addSelfToRelated = true,
             )
@@ -425,7 +423,7 @@ abstract class TagDocProcessor : DocProcessor() {
     ): List<HighlightInfo> =
         buildList {
             // '@' and tag name
-            this += buildHighlightInfo(
+            this += buildHighlightInfoWithDescription(
                 range = rangeInDocContent.first..(rangeInDocContent.first + tagName.length),
                 type = HighlightType.TAG,
                 tag = tagName,
@@ -435,7 +433,6 @@ abstract class TagDocProcessor : DocProcessor() {
             this += buildHighlightInfo(
                 rangeInDocContent,
                 type = HighlightType.BACKGROUND,
-                tag = tagName,
                 addSelfToRelated = true,
             )
         }

@@ -84,22 +84,13 @@ abstract class DocProcessor : Serializable {
     /**
      * Builds a [HighlightInfo] object with the given parameters in the context of this processor.
      * Fills in [HighlightInfo.tagProcessorName] with the name of this processor.
-     * Builds [HighlightInfo.description] from the [completionInfos] of this processor.
+     *
+     * @see buildHighlightInfoWithDescription
      */
     protected fun buildHighlightInfo(
         range: IntRange,
         type: HighlightType,
-        tag: String,
-        description: String = completionInfos // get the description from the completion infos
-            .find { it.tag == tag }
-            ?.let {
-                "${
-                    (it.presentableBlockText ?: it.presentableInlineText)
-                        ?.surroundWith("\"")
-                        ?.plus(": ")
-                        ?: ""
-                }${it.tailText}"
-            } ?: "",
+        description: String = "",
         related: List<HighlightInfo> = emptyList(),
         addSelfToRelated: Boolean = false,
     ): HighlightInfo =
@@ -120,6 +111,38 @@ abstract class DocProcessor : Serializable {
             },
             description = description,
             tagProcessorName = name,
+        )
+
+    /**
+     * Builds a [HighlightInfo] object with the given parameters in the context of this processor.
+     * Fills in [HighlightInfo.tagProcessorName] with the name of this processor.
+     * Builds [HighlightInfo.description] from the [completionInfos] of this processor.
+     * Mostly used for The @, tag name and brackets.
+     *
+     * @see buildHighlightInfo
+     */
+    protected fun buildHighlightInfoWithDescription(
+        range: IntRange,
+        type: HighlightType,
+        tag: String,
+        related: List<HighlightInfo> = emptyList(),
+        addSelfToRelated: Boolean = false,
+    ): HighlightInfo =
+        buildHighlightInfo(
+            range = range,
+            type = type,
+            description = completionInfos // get the description from the completion infos
+                .find { it.tag == tag }
+                ?.let {
+                    "${
+                        (it.presentableBlockText ?: it.presentableInlineText)
+                            ?.surroundWith("\"")
+                            ?.plus(": ")
+                            ?: ""
+                    }${it.tailText}"
+                } ?: "",
+            related = related,
+            addSelfToRelated = addSelfToRelated,
         )
 }
 

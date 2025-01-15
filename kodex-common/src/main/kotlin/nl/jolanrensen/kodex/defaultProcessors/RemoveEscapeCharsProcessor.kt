@@ -71,7 +71,7 @@ class RemoveEscapeCharsProcessor : DocProcessor() {
             docContent.value
                 .getIndicesOfEscapeChars(escapeChars)
                 .forEach {
-                    this += buildHighlightInfo(
+                    this += buildHighlightInfoWithDescription(
                         range = it..it,
                         type = HighlightType.BRACKET,
                         tag = "\\",

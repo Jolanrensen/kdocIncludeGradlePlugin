@@ -69,14 +69,14 @@ class CommentDocProcessor : TagDocProcessor() {
     ): List<HighlightInfo> =
         buildList {
             // '{'
-            val leftBracket = buildHighlightInfo(
+            val leftBracket = buildHighlightInfoWithDescription(
                 range = rangeInDocContent.first..rangeInDocContent.first,
                 type = HighlightType.COMMENT,
                 tag = TAG,
             )
 
             // '@' and tag name
-            this += buildHighlightInfo(
+            this += buildHighlightInfoWithDescription(
                 range = (rangeInDocContent.first + 1)..(rangeInDocContent.first + 1 + tagName.length),
                 type = HighlightType.COMMENT_TAG,
                 tag = TAG,
@@ -86,11 +86,10 @@ class CommentDocProcessor : TagDocProcessor() {
             this += buildHighlightInfo(
                 range = (rangeInDocContent.first + 1 + tagName.length + 1)..rangeInDocContent.last - 1,
                 type = HighlightType.COMMENT,
-                tag = TAG,
             )
 
             // '}
-            val rightBracket = buildHighlightInfo(
+            val rightBracket = buildHighlightInfoWithDescription(
                 range = rangeInDocContent.last..rangeInDocContent.last,
                 type = HighlightType.COMMENT,
                 tag = TAG,
@@ -104,7 +103,6 @@ class CommentDocProcessor : TagDocProcessor() {
             this += buildHighlightInfo(
                 rangeInDocContent,
                 type = HighlightType.BACKGROUND,
-                tag = tagName,
                 related = listOf(leftBracket, rightBracket),
                 addSelfToRelated = true,
             )
@@ -117,7 +115,7 @@ class CommentDocProcessor : TagDocProcessor() {
     ): List<HighlightInfo> =
         buildList {
             // '@' and tag name
-            this += buildHighlightInfo(
+            this += buildHighlightInfoWithDescription(
                 range = rangeInDocContent.first..(rangeInDocContent.first + tagName.length),
                 type = HighlightType.COMMENT_TAG,
                 tag = TAG,
@@ -127,14 +125,12 @@ class CommentDocProcessor : TagDocProcessor() {
             this += buildHighlightInfo(
                 range = (rangeInDocContent.first + 1 + tagName.length)..rangeInDocContent.last,
                 type = HighlightType.COMMENT,
-                tag = TAG,
             )
 
             // background
             this += buildHighlightInfo(
                 rangeInDocContent,
                 type = HighlightType.BACKGROUND,
-                tag = tagName,
                 addSelfToRelated = true,
             )
         }

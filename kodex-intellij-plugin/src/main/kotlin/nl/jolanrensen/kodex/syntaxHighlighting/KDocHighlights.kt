@@ -54,7 +54,14 @@ class KDocHighlightAnnotator :
     @Suppress("ktlint:standard:comment-wrapping")
     private fun HighlightInfo.createAsAnnotator(kdoc: KDoc, holder: AnnotationHolder) =
         holder
-            .newAnnotation(HighlightSeverity.INFORMATION, "$description ($tagProcessorName)")
+            .newSilentAnnotation(HighlightSeverity.INFORMATION)
+            .let {
+                if (description.isNotBlank()) {
+                    it.tooltip("$description ($tagProcessorName)")
+                } else {
+                    it
+                }
+            }
             .needsUpdateOnTyping()
             .range(
                 TextRange(
@@ -70,7 +77,10 @@ class KDocHighlightAnnotator :
         if (element !is KDoc) return
 
         getHighlightInfosFor(element, loadedProcessors).forEach {
-            it.forEach {
+            for (it in it) {
+                // handled by KDocHighlightListener
+                if (it.type == HighlightType.BACKGROUND) continue
+
                 it.createAsAnnotator(element, holder)
             }
         }
@@ -148,10 +158,6 @@ class KDocHighlightListener private constructor(private val editor: Editor) :
                     fontType = Font.BOLD + Font.ITALIC
                 }
 
-            val backgroundHighlightColor = scheme.getAttributes(
-                KotlinHighlightingColors.SMART_CAST_VALUE,
-            ).backgroundColor
-
             // background
             val backgroundsToHighlight = highlightInfos
                 // take the first group of background highlights, as it's generally the deepest
@@ -169,11 +175,9 @@ class KDocHighlightListener private constructor(private val editor: Editor) :
                         // endOffset =
                         kdocStart + highlightInfo.range.last + 1,
                         // layer =
-                        HighlighterLayer.SELECTION + 100,
+                        HighlighterLayer.ELEMENT_UNDER_CARET - 1,
                         // textAttributes =
-                        TextAttributes().apply {
-                            backgroundColor = backgroundHighlightColor
-                        },
+                        textAttributesFor(HighlightType.BACKGROUND),
                         // targetArea =
                         HighlighterTargetArea.EXACT_RANGE,
                     )
@@ -229,7 +233,9 @@ private fun textAttributesFor(highlightType: HighlightType): TextAttributes {
     val kdocLinkAttributes = scheme.getAttributes(KotlinHighlightingColors.KDOC_LINK)
     val commentAttributes = scheme.getAttributes(KotlinHighlightingColors.BLOCK_COMMENT)
     val declarationAttributes = scheme.getAttributes(DefaultLanguageHighlighterColors.CLASS_NAME)
-    val kdocAttributes = scheme.getAttributes(DefaultLanguageHighlighterColors.DOC_COMMENT)
+
+    val backgroundHighlightColor = scheme.getAttributes(KotlinHighlightingColors.SMART_CAST_VALUE)
+        .backgroundColor
 
     return when (highlightType) {
         HighlightType.BRACKET ->
@@ -262,8 +268,10 @@ private fun textAttributesFor(highlightType: HighlightType): TextAttributes {
                 effectColor = commentAttributes.foregroundColor
             }
 
-        // handled by KDocHighlightListener
-        HighlightType.BACKGROUND -> kdocAttributes.clone().apply {}
+        // handled by KDocHighlightListener, should only be applied when touching
+        HighlightType.BACKGROUND -> TextAttributes().apply {
+            backgroundColor = backgroundHighlightColor
+        }
     }
 }
 
