@@ -23,6 +23,7 @@ import com.intellij.psi.PsiManager
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiTreeUtil.processElements
 import io.ktor.utils.io.CancellationException
+import nl.jolanrensen.kodex.kodexInlineRenderingIsEnabled
 import nl.jolanrensen.kodex.services.DocProcessorServiceK2
 import nl.jolanrensen.kodex.utils.docComment
 import org.jetbrains.annotations.Nls
@@ -222,7 +223,7 @@ class DocProcessorInlineDocumentationProvider : InlineDocumentationProvider {
         if (file !is KtFile) return emptyList()
 
         val service = getService(file.project)
-        if (!service.isEnabled) return emptyList()
+        if (!service.isEnabled || !kodexInlineRenderingIsEnabled) return emptyList()
 
         try {
             val result = mutableListOf<InlineDocumentation>()
@@ -247,7 +248,7 @@ class DocProcessorInlineDocumentationProvider : InlineDocumentationProvider {
 
     override fun findInlineDocumentation(file: PsiFile, textRange: TextRange): InlineDocumentation? {
         val service = getService(file.project)
-        if (!service.isEnabled) return null
+        if (!service.isEnabled || !kodexInlineRenderingIsEnabled) return null
 
         try {
             val comment = PsiTreeUtil.getParentOfType(

@@ -46,8 +46,11 @@ class DocProcessorToolWindowFactory : ToolWindowFactory {
                                 when (setting) {
                                     is BooleanSetting ->
                                         checkBox(MessageBundle.message(setting.messageBundleName))
-                                            .bindSelected(setting::value)
-                                            .onChanged { panel.apply() }
+                                            .bindSelected(setting)
+                                            .enabledIf(setting.isEnabled)
+                                            .onChanged {
+                                                panel.apply()
+                                            }
 
                                     is EnumSetting<*> -> {
                                         label(MessageBundle.message(setting.messageBundleName))
@@ -55,7 +58,10 @@ class DocProcessorToolWindowFactory : ToolWindowFactory {
                                             .bindItem({ setting.value }) {
                                                 it?.let { setting.setValueAsAny(it) }
                                             }
-                                            .onChanged { panel.apply() }
+                                            .enabledIf(setting.isEnabled)
+                                            .onChanged {
+                                                panel.apply()
+                                            }
                                     }
                                 }
                             }
