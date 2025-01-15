@@ -152,12 +152,6 @@ class KDocHighlightListener private constructor(private val editor: Editor) :
             val highlightInfos = getHighlightInfosFor(kdoc, loadedProcessors)
             val kdocStart = kdoc.startOffset
 
-            val relatedHighlightAttributes = scheme.getAttributes(CodeInsightColors.MATCHED_BRACE_ATTRIBUTES)
-                .clone()
-                .apply {
-                    fontType = Font.BOLD + Font.ITALIC
-                }
-
             // background
             val backgroundsToHighlight = highlightInfos
                 // take the first group of background highlights, as it's generally the deepest
@@ -167,7 +161,9 @@ class KDocHighlightListener private constructor(private val editor: Editor) :
                 } ?: emptyList()
 
             for (it in backgroundsToHighlight) {
-                val allToHighlight = (it.related + it).filter { it.type == HighlightType.BACKGROUND }
+                // we can just look at the related backgrounds since `it` is in the related list too
+                // thanks to buildHighlightInfo.includeSelf
+                val allToHighlight = it.related.filter { it.type == HighlightType.BACKGROUND }
                 for (highlightInfo in allToHighlight) {
                     highlighters += markupModel.addRangeHighlighter(
                         // startOffset =
@@ -185,6 +181,14 @@ class KDocHighlightListener private constructor(private val editor: Editor) :
             }
 
             // related symbols such as brackets
+            val relatedHighlightAttributes by lazy {
+                scheme.getAttributes(CodeInsightColors.MATCHED_BRACE_ATTRIBUTES)
+                    .clone()
+                    .apply {
+                        fontType = Font.BOLD + Font.ITALIC
+                    }
+            }
+
             val relatedToHighlight = highlightInfos.flatten().firstNotNullOfOrNull {
                 // already highlighted related backgrounds
                 val related = it.related.filter { it.type != HighlightType.BACKGROUND }
@@ -229,10 +233,10 @@ class KDocHighlightListener private constructor(private val editor: Editor) :
 private fun textAttributesFor(highlightType: HighlightType): TextAttributes {
     val scheme = EditorColorsManager.getInstance().globalScheme
 
-    val metadataAttributes = scheme.getAttributes(DefaultLanguageHighlighterColors.METADATA)
-    val kdocLinkAttributes = scheme.getAttributes(KotlinHighlightingColors.KDOC_LINK)
-    val commentAttributes = scheme.getAttributes(KotlinHighlightingColors.BLOCK_COMMENT)
-    val declarationAttributes = scheme.getAttributes(DefaultLanguageHighlighterColors.CLASS_NAME)
+    val metadataAttributes by lazy { scheme.getAttributes(DefaultLanguageHighlighterColors.METADATA) }
+    val kdocLinkAttributes by lazy { scheme.getAttributes(KotlinHighlightingColors.KDOC_LINK) }
+    val commentAttributes by lazy { scheme.getAttributes(KotlinHighlightingColors.BLOCK_COMMENT) }
+    val declarationAttributes by lazy { scheme.getAttributes(DefaultLanguageHighlighterColors.CLASS_NAME) }
 
     val backgroundHighlightColor = scheme.getAttributes(KotlinHighlightingColors.SMART_CAST_VALUE)
         .backgroundColor

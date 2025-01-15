@@ -172,6 +172,8 @@ private fun createKotlinDocumentationTarget(element: PsiElement, originalElement
 /**
  * inline, used for rendering single doc comment in file, does not work for multiple, Issue #54,
  * this is handled by [DocProcessorDocumentationProvider].
+ *
+ * TODO slow, runs a lot!
  */
 @ApiStatus.Experimental
 class DocProcessorInlineDocumentationProvider : InlineDocumentationProvider {

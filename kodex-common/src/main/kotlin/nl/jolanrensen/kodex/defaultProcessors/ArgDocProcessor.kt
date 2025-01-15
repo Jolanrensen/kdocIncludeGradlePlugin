@@ -467,12 +467,6 @@ class ArgDocProcessor : TagDocProcessor() {
                     type = HighlightType.TAG_VALUE,
                 )?.let(::add)
             }
-
-            this += buildHighlightInfo(
-                range = rangeInDocContent,
-                type = HighlightType.BACKGROUND,
-                addSelfToRelated = true,
-            )
         }
 
     override fun getHighlightsFor(docContent: DocContent): List<HighlightInfo> =
