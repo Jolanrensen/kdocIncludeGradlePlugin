@@ -11,12 +11,15 @@ abstract class DocAnalyser<out R> : DocProcessor() {
 
     protected abstract fun analyze(processLimit: Int, documentablesByPath: DocumentablesByPath)
 
-    fun analyzeSafely(processLimit: Int, documentablesByPath: DocumentablesByPath): DocAnalyser<R> {
+    suspend fun analyzeSafely(processLimit: Int, documentablesByPath: DocumentablesByPath): DocAnalyser<R> {
         processSafely(processLimit, documentablesByPath)
         return this
     }
 
-    final override fun process(processLimit: Int, documentablesByPath: DocumentablesByPath): DocumentablesByPath {
+    final override suspend fun process(
+        processLimit: Int,
+        documentablesByPath: DocumentablesByPath,
+    ): DocumentablesByPath {
         analyze(processLimit, documentablesByPath)
         return documentablesByPath
     }

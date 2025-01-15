@@ -2,7 +2,7 @@ package nl.jolanrensen.kodex.processor
 
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.coroutineScope
 import nl.jolanrensen.kodex.docContent.DocContent
 import nl.jolanrensen.kodex.docContent.asDocContent
 import nl.jolanrensen.kodex.docContent.findBlockTagsWithRanges
@@ -86,7 +86,7 @@ abstract class TagDocProcessor : DocProcessor() {
      * You can optionally sort the documentables to optimize the order in which they are processed.
      * [TagDocAnalyser] can be used for that.
      */
-    open fun <T : DocumentableWrapper> sortDocumentables(
+    open suspend fun <T : DocumentableWrapper> sortDocumentables(
         documentables: List<T>,
         processLimit: Int,
         documentablesByPath: DocumentablesByPath,
@@ -180,27 +180,27 @@ abstract class TagDocProcessor : DocProcessor() {
      * filtered documentables. This means that recursion (a.k.a tags that create other supported tags)
      * is possible. However, there is a limit to prevent infinite recursion ([ProcessDocsAction.Parameters.processLimit]).
      */
-    override fun process(processLimit: Int, documentablesByPath: DocumentablesByPath): DocumentablesByPath {
-        // Convert to mutable
-        mutableDocumentablesByPath = documentablesByPath
-            .toMutable()
-            .withQueryFilter(::filterDocumentablesToQuery)
-            .withDocsToProcessFilter(::filterDocumentablesToProcess)
+    override suspend fun process(processLimit: Int, documentablesByPath: DocumentablesByPath): DocumentablesByPath =
+        coroutineScope {
+            // Convert to mutable
+            mutableDocumentablesByPath = documentablesByPath
+                .toMutable()
+                .withQueryFilter(::filterDocumentablesToQuery)
+                .withDocsToProcessFilter(::filterDocumentablesToProcess)
 
-        // Main recursion loop that will continue until all supported tags are replaced
-        // or the process limit is reached.
-        var i = 0
-        while (true) {
-            val filteredDocumentablesWithTag = mutableDocumentablesByPath
-                .documentablesToProcess
-                .flatMap { it.value }
-                .filter { it.hasSupportedTag }
-                .distinctBy { it.identifier }
-                .let { sortDocumentables(it, processLimit, documentablesByPath) }
+            // Main recursion loop that will continue until all supported tags are replaced
+            // or the process limit is reached.
+            var i = 0
+            while (true) {
+                val filteredDocumentablesWithTag = mutableDocumentablesByPath
+                    .documentablesToProcess
+                    .flatMap { it.value }
+                    .filter { it.hasSupportedTag }
+                    .distinctBy { it.identifier }
+                    .let { sortDocumentables(it, processLimit, documentablesByPath) }
 
-            var anyModifications = false
-            if (canProcessParallel) {
-                runBlocking {
+                var anyModifications = false
+                if (canProcessParallel) {
                     anyModifications = filteredDocumentablesWithTag
                         .mapNotNull { documentable ->
                             if (!documentable.hasSupportedTag) {
@@ -212,24 +212,23 @@ abstract class TagDocProcessor : DocProcessor() {
                             }
                         }.awaitAll()
                         .any { it }
+                } else {
+                    for (documentable in filteredDocumentablesWithTag) {
+                        if (!documentable.hasSupportedTag) continue
+                        anyModifications = processDocumentable(documentable, processLimit)
+                    }
                 }
-            } else {
-                for (documentable in filteredDocumentablesWithTag) {
-                    if (!documentable.hasSupportedTag) continue
-                    anyModifications = processDocumentable(documentable, processLimit)
-                }
+
+                val shouldContinue = shouldContinue(
+                    i = i++,
+                    anyModifications = anyModifications,
+                    processLimit = processLimit,
+                )
+                if (!shouldContinue) break
             }
 
-            val shouldContinue = shouldContinue(
-                i = i++,
-                anyModifications = anyModifications,
-                processLimit = processLimit,
-            )
-            if (!shouldContinue) break
+            return@coroutineScope mutableDocumentablesByPath
         }
-
-        return mutableDocumentablesByPath
-    }
 
     protected fun processDocumentable(documentable: MutableDocumentableWrapper, processLimit: Int): Boolean {
         val docContent = documentable.docContent

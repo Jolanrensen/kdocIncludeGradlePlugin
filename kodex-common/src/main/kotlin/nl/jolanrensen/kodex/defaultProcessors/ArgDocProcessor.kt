@@ -1,8 +1,8 @@
 package nl.jolanrensen.kodex.defaultProcessors
 
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import nl.jolanrensen.kodex.docContent.DocContent
 import nl.jolanrensen.kodex.docContent.asDocContent
 import nl.jolanrensen.kodex.docContent.findTagNames
@@ -232,21 +232,21 @@ class ArgDocProcessor : TagDocProcessor() {
      * and all `${a=b}` and `$a=b` tags to `{@get a b}`
      * before running the normal tag processor.
      */
-    override fun process(processLimit: Int, documentablesByPath: DocumentablesByPath): DocumentablesByPath {
+    override suspend fun process(processLimit: Int, documentablesByPath: DocumentablesByPath): DocumentablesByPath =
+        coroutineScope {
         val mutable = documentablesByPath.toMutable()
-        runBlocking {
-            mutable.documentablesToProcess.flatMap { (_, docs) ->
-                docs.map { doc ->
-                    launch {
-                        doc.modifyDocContentAndUpdate(
-                            doc.docContent.replaceDollarNotation(),
-                        )
-                    }
-                }
-            }.joinAll()
-        }
 
-        return super.process(processLimit, mutable)
+        mutable.documentablesToProcess.flatMap { (_, docs) ->
+            docs.map { doc ->
+                launch {
+                    doc.modifyDocContentAndUpdate(
+                        doc.docContent.replaceDollarNotation(),
+                    )
+                }
+            }
+        }.joinAll()
+
+        return@coroutineScope super.process(processLimit, mutable)
     }
 
     // TODO remove if deprecation is gone

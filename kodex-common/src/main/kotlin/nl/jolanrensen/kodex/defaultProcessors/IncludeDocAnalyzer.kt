@@ -21,7 +21,7 @@ import java.util.UUID
 internal class IncludeDocAnalyzer :
     TagDocAnalyser<SimpleDirectedGraph<DocumentableWrapper, Edge<DocumentableWrapper>>>() {
     companion object {
-        fun getAnalyzedResult(
+        suspend fun getAnalyzedResult(
             processLimit: Int,
             documentablesByPath: DocumentablesByPath,
             analyzeQueriesToo: Boolean = false,

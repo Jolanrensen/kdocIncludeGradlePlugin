@@ -16,7 +16,7 @@ abstract class TagDocAnalyser<out R> : TagDocProcessor() {
 
     abstract fun getAnalyzedResult(): R
 
-    fun analyzeSafely(processLimit: Int, documentablesByPath: DocumentablesByPath): TagDocAnalyser<R> {
+    suspend fun analyzeSafely(processLimit: Int, documentablesByPath: DocumentablesByPath): TagDocAnalyser<R> {
         processSafely(processLimit, documentablesByPath)
         return this
     }
@@ -42,8 +42,10 @@ abstract class TagDocAnalyser<out R> : TagDocProcessor() {
     protected final fun analyzeDocumentable(documentable: DocumentableWrapper, processLimit: Int): Boolean =
         processDocumentable(documentable.toMutable(), processLimit)
 
-    final override fun process(processLimit: Int, documentablesByPath: DocumentablesByPath): DocumentablesByPath =
-        super.process(processLimit, documentablesByPath)
+    final override suspend fun process(
+        processLimit: Int,
+        documentablesByPath: DocumentablesByPath,
+    ): DocumentablesByPath = super.process(processLimit, documentablesByPath)
 
     // we only need one iteration for analyzing as no modifications can be made
     final override fun shouldContinue(i: Int, anyModifications: Boolean, processLimit: Int): Boolean {

@@ -14,7 +14,7 @@ const val NO_DOC_PROCESSOR = "nl.jolanrensen.kodex.defaultProcessors.NoDocProces
  * A doc processor that simply removes all docs from the sources.
  */
 class NoDocProcessor : DocProcessor() {
-    override fun process(processLimit: Int, documentablesByPath: DocumentablesByPath): DocumentablesByPath =
+    override suspend fun process(processLimit: Int, documentablesByPath: DocumentablesByPath): DocumentablesByPath =
         documentablesByPath
             .documentablesToProcess
             .map { (path, documentables) ->

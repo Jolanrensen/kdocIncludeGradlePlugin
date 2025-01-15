@@ -66,7 +66,7 @@ abstract class RunKodexAction {
 
     abstract val parameters: Parameters
 
-    protected fun process() {
+    protected suspend fun process() {
         // analyse the sources with dokka to get the documentables
         log.lifecycle { "Analyzing sources..." }
         val (sourceDocs, time) = measureTimedValue {

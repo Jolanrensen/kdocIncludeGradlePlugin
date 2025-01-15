@@ -89,7 +89,7 @@ open class DocumentablesByPathWithCache(
      * we set a context and a documentable to process
      * returns whether it needs a rebuild
      */
-    fun updatePreProcessing(docToProcess: DocumentableWrapper): Boolean {
+    suspend fun updatePreProcessing(docToProcess: DocumentableWrapper): Boolean {
         val doc = docToProcess.toMutable()
         this.docToProcess = doc
         this.docsToProcess = doc.paths

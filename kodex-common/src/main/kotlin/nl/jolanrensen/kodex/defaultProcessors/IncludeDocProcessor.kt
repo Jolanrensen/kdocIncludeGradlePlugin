@@ -321,7 +321,7 @@ class IncludeDocProcessor : TagDocProcessor() {
             documentable = documentable,
         )
 
-    override fun <T : DocumentableWrapper> sortDocumentables(
+    override suspend fun <T : DocumentableWrapper> sortDocumentables(
         documentables: List<T>,
         processLimit: Int,
         documentablesByPath: DocumentablesByPath,
