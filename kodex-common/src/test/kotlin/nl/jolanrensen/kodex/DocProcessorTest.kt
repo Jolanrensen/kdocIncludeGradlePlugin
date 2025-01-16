@@ -67,7 +67,7 @@ abstract class DocProcessorTest(name: String) {
         }
 
     @kotlin.jvm.Throws(IOException::class)
-    fun processContent(
+    suspend fun processContent(
         documentableWrapper: DocumentableWrapper,
         processors: List<DocProcessor>,
         additionals: List<Additional> = emptyList(),

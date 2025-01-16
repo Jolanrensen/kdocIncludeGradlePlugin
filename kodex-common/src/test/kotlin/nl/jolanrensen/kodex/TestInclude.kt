@@ -1,6 +1,7 @@
 package nl.jolanrensen.kodex
 
 import io.kotest.matchers.shouldBe
+import kotlinx.coroutines.runBlocking
 import nl.jolanrensen.kodex.defaultProcessors.IncludeDocProcessor
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Test
@@ -16,7 +17,7 @@ class TestInclude : DocProcessorTest("include") {
 
     @Test
     @Ignore
-    fun `Include with and without package kotlin`() {
+    fun `Include with and without package kotlin`() = runBlocking {
         @Language("kt")
         val file = """
             package com.example.plugin
