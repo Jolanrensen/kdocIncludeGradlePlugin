@@ -234,20 +234,20 @@ class ArgDocProcessor : TagDocProcessor() {
      */
     override suspend fun process(processLimit: Int, documentablesByPath: DocumentablesByPath): DocumentablesByPath =
         coroutineScope {
-        val mutable = documentablesByPath.toMutable()
+            val mutable = documentablesByPath.toMutable()
 
-        mutable.documentablesToProcess.flatMap { (_, docs) ->
-            docs.map { doc ->
-                launch {
-                    doc.modifyDocContentAndUpdate(
-                        doc.docContent.replaceDollarNotation(),
-                    )
+            mutable.documentablesToProcess.flatMap { (_, docs) ->
+                docs.map { doc ->
+                    launch {
+                        doc.modifyDocContentAndUpdate(
+                            doc.docContent.replaceDollarNotation(),
+                        )
+                    }
                 }
-            }
-        }.joinAll()
+            }.joinAll()
 
-        return@coroutineScope super.process(processLimit, mutable)
-    }
+            return@coroutineScope super.process(processLimit, mutable)
+        }
 
     // TODO remove if deprecation is gone
     private fun provideNewNameWarning(documentable: DocumentableWrapper) =

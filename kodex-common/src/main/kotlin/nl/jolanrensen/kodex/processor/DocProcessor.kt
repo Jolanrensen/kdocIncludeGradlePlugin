@@ -98,14 +98,14 @@ abstract class DocProcessor : Serializable {
         addSelfToRelated: Boolean = false,
     ): HighlightInfo =
         HighlightInfo(
-            range = range,
+            ranges = listOf(range),
             type = type,
             related = buildList {
                 addAll(related)
                 // so mapping it will put itself in the related list
                 if (addSelfToRelated) {
                     this += HighlightInfo(
-                        range = range,
+                        ranges = listOf(range),
                         type = type,
                         description = description,
                         tagProcessorName = name,

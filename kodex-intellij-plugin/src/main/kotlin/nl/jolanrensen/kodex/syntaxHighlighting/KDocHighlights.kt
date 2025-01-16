@@ -1,5 +1,6 @@
 package nl.jolanrensen.kodex.syntaxHighlighting
 
+import com.intellij.codeInspection.InspectionsBundle
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.lang.annotation.HighlightSeverity
@@ -32,6 +33,8 @@ import nl.jolanrensen.kodex.getLoadedProcessors
 import nl.jolanrensen.kodex.intellij.HighlightInfo
 import nl.jolanrensen.kodex.intellij.HighlightType
 import nl.jolanrensen.kodex.intellij.applyMapping
+import nl.jolanrensen.kodex.intellij.contains
+import nl.jolanrensen.kodex.intellij.removeIndices
 import nl.jolanrensen.kodex.kodexHighlightingIsEnabled
 import nl.jolanrensen.kodex.processor.DocProcessor
 import org.jetbrains.kotlin.idea.codeinsight.utils.findExistingEditor
@@ -53,34 +56,34 @@ class KDocHighlightAnnotator :
 
     @Suppress("ktlint:standard:comment-wrapping")
     private fun HighlightInfo.createAsAnnotator(kdoc: KDoc, holder: AnnotationHolder) =
-        holder
-            .newSilentAnnotation(HighlightSeverity.INFORMATION)
-            .let {
-                if (description.isNotBlank()) {
-                    it.tooltip("$description ($tagProcessorName)")
-                } else {
-                    it
+        ranges.forEach { range ->
+            holder
+                .newSilentAnnotation(HighlightSeverity.INFORMATION)
+                .let {
+                    if (description.isNotBlank()) {
+                        it.tooltip("$description ($tagProcessorName)")
+                    } else {
+                        it
+                    }
                 }
-            }
-            .needsUpdateOnTyping()
-            .range(
-                TextRange(
-                    /* startOffset = */ kdoc.startOffset + range.first,
-                    /* endOffset = */ kdoc.startOffset + range.last + 1,
-                ),
-            )
-            .enforcedTextAttributes(textAttributesFor(type))
-            .create()
+                .needsUpdateOnTyping()
+                .range(
+                    TextRange(
+                        /* startOffset = */ kdoc.startOffset + range.first,
+                        /* endOffset = */ kdoc.startOffset + range.last + 1,
+                    ),
+                )
+                .enforcedTextAttributes(textAttributesFor(type))
+                .create()
+        }
 
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
         if (!kodexHighlightingIsEnabled) return
         if (element !is KDoc) return
 
         getHighlightInfosFor(element, loadedProcessors).forEach {
-            for (it in it) {
-                // handled by KDocHighlightListener
-                if (it.type == HighlightType.BACKGROUND) continue
-
+            // handled by KDocHighlightListener
+            if (it.type != HighlightType.BACKGROUND) {
                 it.createAsAnnotator(element, holder)
             }
         }
@@ -153,32 +156,34 @@ class KDocHighlightListener private constructor(private val editor: Editor) :
             val kdocStart = kdoc.startOffset
 
             // background
-            val backgroundsToHighlight = highlightInfos
-                // take the first group of background highlights, as it's generally the deepest
+            val backgroundToHighlight = highlightInfos
+                // take the first background to highlight, as it's generally the deepest
                 .firstOrNull {
-                    it.any { caretOffset in (kdocStart + it.range.extendLastByOne()) } &&
-                        it.all { it.type == HighlightType.BACKGROUND }
-                } ?: emptyList()
-
-            for (it in backgroundsToHighlight) {
-                // we can just look at the related backgrounds since `it` is in the related list too
-                // thanks to buildHighlightInfo.includeSelf
-                val allToHighlight = it.related.filter { it.type == HighlightType.BACKGROUND }
-                for (highlightInfo in allToHighlight) {
-                    highlighters += markupModel.addRangeHighlighter(
-                        // startOffset =
-                        kdocStart + highlightInfo.range.first,
-                        // endOffset =
-                        kdocStart + highlightInfo.range.last + 1,
-                        // layer =
-                        HighlighterLayer.ELEMENT_UNDER_CARET - 1,
-                        // textAttributes =
-                        textAttributesFor(HighlightType.BACKGROUND),
-                        // targetArea =
-                        HighlighterTargetArea.EXACT_RANGE,
-                    )
+                    it.ranges.any {
+                        caretOffset in (kdocStart + it.extendLastByOne())
+                    } && it.type == HighlightType.BACKGROUND
                 }
-            }
+
+            // we can just look at the related backgrounds since `backgroundToHighlight` is in its related list too
+            // thanks to buildHighlightInfo.includeSelf
+            backgroundToHighlight?.related
+                ?.filter { it.type == HighlightType.BACKGROUND }
+                ?.forEach {
+                    for (range in it.ranges) {
+                        highlighters += markupModel.addRangeHighlighter(
+                            // startOffset =
+                            kdocStart + range.first,
+                            // endOffset =
+                            kdocStart + range.last + 1,
+                            // layer =
+                            HighlighterLayer.ELEMENT_UNDER_CARET - 1,
+                            // textAttributes =
+                            textAttributesFor(HighlightType.BACKGROUND),
+                            // targetArea =
+                            HighlighterTargetArea.EXACT_RANGE,
+                        )
+                    }
+                }
 
             // related symbols such as brackets
             val relatedHighlightAttributes by lazy {
@@ -189,33 +194,38 @@ class KDocHighlightListener private constructor(private val editor: Editor) :
                     }
             }
 
-            val relatedToHighlight = highlightInfos.flatten().firstNotNullOfOrNull {
-                // already highlighted related backgrounds
-                val related = it.related.filter { it.type != HighlightType.BACKGROUND }
-                if (related.isNotEmpty() && caretOffset in (kdocStart + it.range.extendLastByOne())) {
-                    if (it.type == HighlightType.BACKGROUND) {
-                        related
+            val relatedToHighlight = highlightInfos
+                // only add bracket matching for the background that is highlighted currently
+                .filter { it.type != HighlightType.BACKGROUND }
+                .let { if (backgroundToHighlight != null) it.plus(backgroundToHighlight) else it }
+                .firstNotNullOfOrNull {
+                    // we're trying to highlight brackets, not backgrounds
+                    val related = it.related.filter { it.type != HighlightType.BACKGROUND }
+                    if (related.isNotEmpty() && it.ranges.any { caretOffset in (kdocStart + it.extendLastByOne()) }) {
+                        if (it.type == HighlightType.BACKGROUND) {
+                            related
+                        } else {
+                            related + it
+                        }
                     } else {
-                        related + it
+                        null
                     }
-                } else {
-                    null
-                }
-            } ?: return
+                } ?: return
 
             for (it in relatedToHighlight) {
-                highlighters += markupModel.addRangeHighlighter(
-                    // startOffset =
-                    kdocStart + it.range.first,
-                    // endOffset =
-                    kdocStart + it.range.last + 1,
-                    // layer =
-                    HighlighterLayer.SELECTION + 100,
-                    // textAttributes =
-                    relatedHighlightAttributes,
-                    // targetArea =
-                    HighlighterTargetArea.EXACT_RANGE,
-                )
+                for (range in it.ranges)
+                    highlighters += markupModel.addRangeHighlighter(
+                        // startOffset =
+                        kdocStart + range.first,
+                        // endOffset =
+                        kdocStart + range.last + 1,
+                        // layer =
+                        HighlighterLayer.SELECTION + 100,
+                        // textAttributes =
+                        relatedHighlightAttributes,
+                        // targetArea =
+                        HighlighterTargetArea.EXACT_RANGE,
+                    )
             }
         }
 
@@ -279,23 +289,39 @@ private fun textAttributesFor(highlightType: HighlightType): TextAttributes {
     }
 }
 
-private fun getHighlightInfosFor(kdoc: KDoc, loadedProcessors: List<DocProcessor>): List<List<HighlightInfo>> =
-    buildList {
-        val docText = kdoc.text.asDocTextOrNull() ?: return@buildList
+private fun getHighlightInfosFor(kdoc: KDoc, loadedProcessors: List<DocProcessor>): List<HighlightInfo> {
+    val docText = kdoc.text.asDocTextOrNull() ?: return emptyList()
 
-        // convert the doc text to doc content to retrieve the highlights from the processors
-        val (docContent, mapping) = docText.getDocContentWithMap()
+    // convert the doc text to doc content to retrieve the highlights from the processors
+    val (docContent, mapping) = docText.getDocContentWithMap()
 
+    val docContentHighlightInfos = buildList<HighlightInfo> {
         for (processor in loadedProcessors) {
             val highlightInfo = processor.getHighlightsFor(docContent)
-                .applyMapping(mapping::get) // map back to doc text indices
+                // exclude highlights that are already covered by previous processors
+                .removeIndices { index ->
+                    this.any { index in it }
+                }
 
             addAll(highlightInfo)
         }
     }
+
+    return docContentHighlightInfos.applyMapping(mapping::get) // map back to doc text indices
+}
 
 private fun IntRange.extendLastByOne() = first..last + 1
 
 private operator fun Int.plus(range: IntRange) = range.first + this..range.last + this
 
 private operator fun IntRange.plus(int: Int) = this.first + int..this.last + int
+
+@Suppress("InvalidBundleOrProperty")
+private fun informationHighlightSeverityOf(valModifier: Int) =
+    HighlightSeverity(
+        "INFORMATION",
+        10 + valModifier,
+        InspectionsBundle.messagePointer("information.severity"),
+        InspectionsBundle.messagePointer("information.severity.capitalized"),
+        InspectionsBundle.messagePointer("information.severity.count.message"),
+    )

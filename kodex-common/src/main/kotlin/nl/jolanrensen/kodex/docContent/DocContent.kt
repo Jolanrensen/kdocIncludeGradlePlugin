@@ -1,6 +1,5 @@
 package nl.jolanrensen.kodex.docContent
 
-import it.unimi.dsi.fastutil.Stack
 import nl.jolanrensen.kodex.docContent.ReferenceState.INSIDE_ALIASED_REFERENCE
 import nl.jolanrensen.kodex.docContent.ReferenceState.INSIDE_REFERENCE
 import nl.jolanrensen.kodex.docContent.ReferenceState.NONE
@@ -8,7 +7,6 @@ import nl.jolanrensen.kodex.utils.BACKTICKS
 import nl.jolanrensen.kodex.utils.CURLY_BRACES
 import nl.jolanrensen.kodex.utils.getTagNameOrNull
 import nl.jolanrensen.kodex.utils.removeAllElementsFromLast
-import java.util.LinkedList
 import java.util.SortedMap
 
 /**
