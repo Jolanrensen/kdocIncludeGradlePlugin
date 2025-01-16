@@ -347,16 +347,49 @@ class IncludeDocProcessor : TagDocProcessor() {
         docContent: DocContent,
     ): List<HighlightInfo> =
         buildList {
-            this += super.getHighlightsForInlineTag(tagName, rangeInDocContent, docContent)
+            // Left '{'
+            val leftBracket = buildHighlightInfoWithDescription(
+                rangeInDocContent.first..rangeInDocContent.first,
+                type = HighlightType.BRACKET,
+                tag = tagName,
+            )
 
-            getArgumentHighlightOrNull(
+            // '@' and tag name
+            this += buildHighlightInfoWithDescription(
+                (rangeInDocContent.first + 1)..(rangeInDocContent.first + 1 + tagName.length),
+                type = HighlightType.TAG,
+                tag = tagName,
+            )
+
+            // Right '}'
+            val rightBracket = buildHighlightInfoWithDescription(
+                rangeInDocContent.last..rangeInDocContent.last,
+                type = HighlightType.BRACKET,
+                tag = tagName,
+            )
+
+            // Linking brackets
+            this += leftBracket.copy(related = listOf(rightBracket))
+            this += rightBracket.copy(related = listOf(leftBracket))
+
+            // [Key]
+            val key = getArgumentHighlightOrNull(
                 argumentIndex = 0,
                 docContent = docContent,
                 rangeInDocContent = rangeInDocContent,
                 tagName = tagName,
                 numberOfArguments = 2,
                 type = HighlightType.TAG_KEY,
-            )?.let(::add)
+            )
+            if (key != null) this += key
+
+            // background, only include the attributes above
+            this += buildHighlightInfo(
+                rangeInDocContent.first..(key?.ranges?.last()?.last ?: (rangeInDocContent.first + tagName.length)),
+                rangeInDocContent.last..rangeInDocContent.last,
+                type = HighlightType.BACKGROUND,
+                related = listOf(leftBracket, rightBracket),
+            )
         }
 
     override fun getHighlightsForBlockTag(
@@ -365,15 +398,28 @@ class IncludeDocProcessor : TagDocProcessor() {
         docContent: DocContent,
     ): List<HighlightInfo> =
         buildList {
-            this += super.getHighlightsForBlockTag(tagName, rangeInDocContent, docContent)
+            // '@' and tag name
+            this += buildHighlightInfoWithDescription(
+                rangeInDocContent.first..(rangeInDocContent.first + tagName.length),
+                type = HighlightType.TAG,
+                tag = tagName,
+            )
 
-            getArgumentHighlightOrNull(
+            // [Key]
+            val key = getArgumentHighlightOrNull(
                 argumentIndex = 0,
                 docContent = docContent,
                 rangeInDocContent = rangeInDocContent,
                 tagName = tagName,
                 numberOfArguments = 2,
                 type = HighlightType.TAG_KEY,
-            )?.let(::add)
+            )
+            if (key != null) this += key
+
+            // background, only include the attributes above
+            this += buildHighlightInfo(
+                rangeInDocContent.first..(key?.ranges?.last()?.last ?: (rangeInDocContent.first + tagName.length)),
+                type = HighlightType.BACKGROUND,
+            )
         }
 }

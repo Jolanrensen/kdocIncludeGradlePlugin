@@ -99,9 +99,9 @@ class ExportAsHtmlDocProcessor : TagDocProcessor() {
             tag = tagName,
         )
 
-        // background
+        // background, only include the attributes above
         this += buildHighlightInfo(
-            *this.flatMap { it.ranges }.toTypedArray(),
+            rangeInDocContent.first..(rangeInDocContent.first + tagName.length),
             type = HighlightType.BACKGROUND,
         )
     }
@@ -136,9 +136,10 @@ class ExportAsHtmlDocProcessor : TagDocProcessor() {
         this += leftBracket.copy(related = listOf(rightBracket))
         this += rightBracket.copy(related = listOf(leftBracket))
 
-        // background
+        // background, only include the attributes above
         this += buildHighlightInfo(
-            *this.flatMap { it.ranges }.toTypedArray(),
+            rangeInDocContent.first..(rangeInDocContent.first + 1 + tagName.length),
+                rangeInDocContent.last..rangeInDocContent.last,
             type = HighlightType.BACKGROUND,
             related = listOf(leftBracket, rightBracket),
         )
