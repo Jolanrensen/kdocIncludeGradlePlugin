@@ -164,10 +164,12 @@ class KDocHighlightListener private constructor(private val editor: Editor) :
                     } && it.type == HighlightType.BACKGROUND
                 }
 
-            // we can just look at the related backgrounds since `backgroundToHighlight` is in its related list too
-            // thanks to buildHighlightInfo.includeSelf
-            backgroundToHighlight?.related
-                ?.filter { it.type == HighlightType.BACKGROUND }
+
+            backgroundToHighlight
+                ?.let {
+                    // the background may have related backgrounds to also highlight
+                    it.related.filter { it.type == HighlightType.BACKGROUND } + it
+                }
                 ?.forEach {
                     for (range in it.ranges) {
                         highlighters += markupModel.addRangeHighlighter(
@@ -299,6 +301,7 @@ private fun getHighlightInfosFor(kdoc: KDoc, loadedProcessors: List<DocProcessor
         for (processor in loadedProcessors) {
             val highlightInfo = processor.getHighlightsFor(docContent)
                 // exclude highlights that are already covered by previous processors
+                // TODO fix order for processors with multiple tags, like get/set
                 .removeIndices { index ->
                     this.any { index in it }
                 }

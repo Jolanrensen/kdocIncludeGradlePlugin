@@ -91,27 +91,15 @@ abstract class DocProcessor : Serializable {
      * @see buildHighlightInfoWithDescription
      */
     protected fun buildHighlightInfo(
-        range: IntRange,
+        vararg ranges: IntRange,
         type: HighlightType,
         description: String = "",
         related: List<HighlightInfo> = emptyList(),
-        addSelfToRelated: Boolean = false,
     ): HighlightInfo =
         HighlightInfo(
-            ranges = listOf(range),
+            ranges = ranges.toList(),
             type = type,
-            related = buildList {
-                addAll(related)
-                // so mapping it will put itself in the related list
-                if (addSelfToRelated) {
-                    this += HighlightInfo(
-                        ranges = listOf(range),
-                        type = type,
-                        description = description,
-                        tagProcessorName = name,
-                    )
-                }
-            },
+            related = related,
             description = description,
             tagProcessorName = name,
         )
@@ -125,14 +113,13 @@ abstract class DocProcessor : Serializable {
      * @see buildHighlightInfo
      */
     protected fun buildHighlightInfoWithDescription(
-        range: IntRange,
+        vararg ranges: IntRange,
         type: HighlightType,
         tag: String,
         related: List<HighlightInfo> = emptyList(),
-        addSelfToRelated: Boolean = false,
     ): HighlightInfo =
         buildHighlightInfo(
-            range = range,
+            ranges = ranges,
             type = type,
             description = completionInfos // get the description from the completion infos
                 .find { it.tag == tag }
@@ -145,7 +132,6 @@ abstract class DocProcessor : Serializable {
                     }${it.tailText}"
                 } ?: "",
             related = related,
-            addSelfToRelated = addSelfToRelated,
         )
 }
 

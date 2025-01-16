@@ -478,14 +478,14 @@ class ArgDocProcessor : TagDocProcessor() {
             for (range in bracedDollarTags) {
                 // '$'
                 this += buildHighlightInfoWithDescription(
-                    range = range.first..range.first,
+                    range.first..range.first,
                     type = HighlightType.TAG,
                     tag = "\${}",
                 )
 
                 // '{'
                 val left = buildHighlightInfoWithDescription(
-                    range = (range.first + 1)..(range.first + 1),
+                    (range.first + 1)..(range.first + 1),
                     type = HighlightType.BRACKET,
                     tag = "\${}",
                 )
@@ -493,7 +493,7 @@ class ArgDocProcessor : TagDocProcessor() {
 
                 // key
                 this += buildHighlightInfo(
-                    range = (range.first + 2)..(range.first + 2 + key.length),
+                    (range.first + 2)..(range.first + 2 + key.length),
                     type = HighlightType.TAG_KEY,
                 )
 
@@ -501,21 +501,21 @@ class ArgDocProcessor : TagDocProcessor() {
                 if (value != null) { // null if there is no '='
                     val equalsPosition = range.first + 2 + key.length
                     this += buildHighlightInfoWithDescription(
-                        range = equalsPosition..equalsPosition,
+                        equalsPosition..equalsPosition,
                         type = HighlightType.BRACKET,
                         tag = "\${}",
                     )
 
                     // value
                     this += buildHighlightInfo(
-                        range = equalsPosition + 1..range.last - 1,
+                        equalsPosition + 1..range.last - 1,
                         type = HighlightType.TAG_VALUE,
                     )
                 }
 
                 // '}'
                 val right = buildHighlightInfoWithDescription(
-                    range = range.last..range.last,
+                    range.last..range.last,
                     type = HighlightType.BRACKET,
                     tag = "\${}",
                 )
@@ -526,10 +526,9 @@ class ArgDocProcessor : TagDocProcessor() {
 
                 // background
                 this += buildHighlightInfo(
-                    range = range,
+                    range,
                     type = HighlightType.BACKGROUND,
                     related = listOf(left, right),
-                    addSelfToRelated = true,
                 )
             }
 
@@ -542,7 +541,7 @@ class ArgDocProcessor : TagDocProcessor() {
 
                 // '$'
                 this += buildHighlightInfoWithDescription(
-                    range = range.first..range.first,
+                    range.first..range.first,
                     type = HighlightType.TAG,
                     tag = "$",
                 )
@@ -550,35 +549,34 @@ class ArgDocProcessor : TagDocProcessor() {
                 if (equalsPosition != null) {
                     // key
                     this += buildHighlightInfo(
-                        range = range.first + 1..equalsPosition - 1,
+                        range.first + 1..equalsPosition - 1,
                         type = HighlightType.TAG_KEY,
                     )
 
                     // `=`
                     this += buildHighlightInfoWithDescription(
-                        range = equalsPosition..equalsPosition,
+                        equalsPosition..equalsPosition,
                         type = HighlightType.BRACKET,
                         tag = "$",
                     )
 
                     // value
                     this += buildHighlightInfo(
-                        range = equalsPosition + 1..range.last,
+                        equalsPosition + 1..range.last,
                         type = HighlightType.TAG_VALUE,
                     )
                 } else {
                     // key
                     this += buildHighlightInfo(
-                        range = range.first + 1..range.last,
+                        range.first + 1..range.last,
                         type = HighlightType.TAG_KEY,
                     )
                 }
 
                 // background
                 this += buildHighlightInfo(
-                    range = range,
+                    range,
                     type = HighlightType.BACKGROUND,
-                    addSelfToRelated = true,
                 )
             }
         }

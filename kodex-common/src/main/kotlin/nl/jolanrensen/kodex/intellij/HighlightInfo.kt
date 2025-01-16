@@ -47,7 +47,6 @@ enum class HighlightType {
 
     /**
      * Will color the background of the range but only when the cursor is touching it.
-     * Make sure to add itself to [HighlightInfo.related] so it survives mapping.
      */
     BACKGROUND,
 }
