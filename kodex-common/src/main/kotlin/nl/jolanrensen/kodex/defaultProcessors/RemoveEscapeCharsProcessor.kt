@@ -70,10 +70,18 @@ class RemoveEscapeCharsProcessor : DocProcessor() {
             docContent.value
                 .getIndicesOfEscapeChars(escapeChars)
                 .forEach {
-                    this += buildHighlightInfoWithDescription(
+                    val bracket = buildHighlightInfoWithDescription(
                         it..it,
                         type = HighlightType.BRACKET,
                         tag = "\\",
+                    )
+                    this += bracket
+
+                    // background behind this and the escaped character
+                    this += buildHighlightInfo(
+                        it..it + 1,
+                        type = HighlightType.BACKGROUND,
+                        related = listOf(bracket),
                     )
                 }
         }
