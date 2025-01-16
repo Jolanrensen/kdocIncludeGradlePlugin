@@ -16,7 +16,6 @@ import com.intellij.psi.PsiElementFactory
 import com.intellij.psi.PsiPolyVariantReference
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import nl.jolanrensen.kodex.Mode
 import nl.jolanrensen.kodex.createFromIntellijOrNull
 import nl.jolanrensen.kodex.defaultProcessors.IncludeDocProcessor
 import nl.jolanrensen.kodex.docContent.DocContent
@@ -28,7 +27,6 @@ import nl.jolanrensen.kodex.exceptions.TagDocProcessorFailedException
 import nl.jolanrensen.kodex.getLoadedProcessors
 import nl.jolanrensen.kodex.getOrigin
 import nl.jolanrensen.kodex.kodexRenderingIsEnabled
-import nl.jolanrensen.kodex.preprocessorMode
 import nl.jolanrensen.kodex.query.DocumentablesByPath
 import nl.jolanrensen.kodex.query.DocumentablesByPathWithCache
 import nl.jolanrensen.kodex.utils.copiedWithFile
@@ -47,15 +45,15 @@ import kotlin.reflect.KType
 import kotlin.reflect.typeOf
 
 @Service(Service.Level.PROJECT)
-class DocProcessorServiceK2(private val project: Project) {
+class DocProcessorService(private val project: Project) {
 
     /**
-     * See [DocProcessorServiceK2]
+     * See [DocProcessorService]
      */
-    private val logger = logger<DocProcessorServiceK2>()
+    private val logger = logger<DocProcessorService>()
 
     companion object {
-        fun getInstance(project: Project): DocProcessorServiceK2 = project.service()
+        fun getInstance(project: Project): DocProcessorService = project.service()
     }
 
     // TODO make configurable
@@ -64,7 +62,7 @@ class DocProcessorServiceK2(private val project: Project) {
     /**
      * Determines whether the DocProcessor is enabled or disabled.
      */
-    val isEnabled get() = kodexRenderingIsEnabled && preprocessorMode == Mode.K2
+    val isEnabled get() = kodexRenderingIsEnabled
 
     fun PsiElement.allChildren(): List<PsiElement> = children.toList() + children.flatMap { it.allChildren() }
 

@@ -1,3 +1,5 @@
+@file:Suppress("UnstableApiUsage")
+
 package nl.jolanrensen.kodex.utils
 
 import com.intellij.lang.java.JavaLanguage

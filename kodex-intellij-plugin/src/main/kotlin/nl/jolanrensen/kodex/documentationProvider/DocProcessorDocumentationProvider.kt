@@ -1,17 +1,22 @@
+@file:Suppress("UnstableApiUsage")
+
 package nl.jolanrensen.kodex.documentationProvider
 
 import com.intellij.lang.documentation.AbstractDocumentationProvider
 import com.intellij.lang.documentation.CompositeDocumentationProvider
 import com.intellij.lang.documentation.ExternalDocumentationProvider
 import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.progress.ProcessCanceledException
+import com.intellij.openapi.progress.runBlockingCancellable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiDocCommentBase
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
-import com.intellij.psi.util.PsiTreeUtil.processElements
-import nl.jolanrensen.kodex.services.DocProcessorServiceK1
+import com.intellij.psi.util.PsiTreeUtil
+import io.ktor.utils.io.CancellationException
+import nl.jolanrensen.kodex.services.DocProcessorService
 import nl.jolanrensen.kodex.utils.docComment
 import org.jetbrains.annotations.Nls
 import org.jetbrains.kotlin.idea.KotlinDocumentationProvider
@@ -20,21 +25,24 @@ import org.jetbrains.kotlin.psi.KtFile
 import java.awt.Image
 import java.util.function.Consumer
 
-// K1
-class DocProcessorDocumentationProviderK1 :
+/**
+ * k1-like method to render multiple documentation items at once, TODO issue #54
+ * Likely to be called often and fail even more, so catching all exceptions.
+ */
+class DocProcessorDocumentationProvider :
     AbstractDocumentationProvider(),
     ExternalDocumentationProvider {
 
     init {
-        println("DocProcessorDocumentationProviderK1 created")
+        println("DocProcessorDocumentationProvider (K2) created")
     }
 
     private val kotlin = KotlinDocumentationProvider()
 
-    private val serviceInstances: MutableMap<Project, DocProcessorServiceK1> = mutableMapOf()
+    private val serviceInstances: MutableMap<Project, DocProcessorService> = mutableMapOf()
 
     private fun getService(project: Project) =
-        serviceInstances.getOrPut(project) { DocProcessorServiceK1.getInstance(project) }
+        serviceInstances.getOrPut(project) { DocProcessorService.Companion.getInstance(project) }
 
     override fun getQuickNavigateInfo(element: PsiElement?, originalElement: PsiElement?): String? =
         kotlin.getQuickNavigateInfo(element, originalElement)
@@ -46,41 +54,56 @@ class DocProcessorDocumentationProviderK1 :
         if (file !is KtFile) return
         if (!getService(file.project).isEnabled) return
 
-        // capture all comments in the file
-        processElements(file) {
-            val comment = (it as? KtDeclaration)?.docComment
-            if (comment != null) {
-                sink.accept(comment)
+        try {
+            // capture all comments in the file
+            PsiTreeUtil.processElements(file) {
+                val comment = (it as? KtDeclaration)?.docComment
+                if (comment != null) {
+                    sink.accept(comment)
+                }
+                true
             }
-            true
+        } catch (_: ProcessCanceledException) {
+        } catch (_: CancellationException) {
+        } catch (e: Throwable) {
+            // e.printStackTrace()
         }
     }
 
     override fun generateDoc(element: PsiElement, originalElement: PsiElement?): String? {
         val service = getService(element.project)
         if (!service.isEnabled) return null
-        val modifiedElement = service.getModifiedElement(element)
-        return try {
-            kotlin.generateDoc(modifiedElement ?: element, originalElement)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
+        try {
+            val modifiedElement = runBlockingCancellable { service.getModifiedElement(element) }
+            return kotlin.generateDoc(modifiedElement ?: element, originalElement)
+        } catch (_: ProcessCanceledException) {
+            return null
+        } catch (_: CancellationException) {
+            return null
+        } catch (e: Throwable) {
+            // e.printStackTrace()
+            return null
         }
     }
 
     override fun generateHoverDoc(element: PsiElement, originalElement: PsiElement?): String? =
-        super.generateDoc(element, originalElement)
+        generateDoc(element, originalElement)
 
     @Nls
     override fun generateRenderedDoc(comment: PsiDocCommentBase): String? {
         val service = getService(comment.project)
         if (!service.isEnabled) return null
-        val modifiedElement = service.getModifiedElement(comment.owner ?: return null)
-        return try {
-            kotlin.generateRenderedDoc(modifiedElement?.docComment ?: comment)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
+        try {
+            val owner = comment.owner ?: return null
+            val modifiedElement = runBlockingCancellable { service.getModifiedElement(owner) }
+            return kotlin.generateRenderedDoc(modifiedElement?.docComment ?: comment)
+        } catch (_: ProcessCanceledException) {
+            return null
+        } catch (_: CancellationException) {
+            return null
+        } catch (e: Throwable) {
+            // e.printStackTrace()
+            return null
         }
     }
 
@@ -128,6 +151,5 @@ class DocProcessorDocumentationProviderK1 :
     override fun canPromptToConfigureDocumentation(element: PsiElement?): Boolean =
         kotlin.canPromptToConfigureDocumentation(element)
 
-    override fun promptToConfigureDocumentation(element: PsiElement?): Unit =
-        kotlin.promptToConfigureDocumentation(element)
+    override fun promptToConfigureDocumentation(element: PsiElement?) = kotlin.promptToConfigureDocumentation(element)
 }

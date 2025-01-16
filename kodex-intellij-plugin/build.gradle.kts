@@ -12,7 +12,7 @@ plugins {
 }
 
 group = "nl.jolanrensen.kodex"
-version = "0.4.2-beta2"
+version = "0.4.2-beta3"
 
 repositories {
     mavenCentral()

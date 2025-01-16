@@ -8,17 +8,11 @@ import com.intellij.openapi.observable.util.whenDisposed
 import org.jetbrains.annotations.PropertyKey
 import kotlin.enums.EnumEntries
 
-private const val MODE = "kodex.mode"
 private const val RENDERING = "kodex.enabled"
 private const val INLINE_RENDERING = "kodex.inlineEnabled"
 
 private const val HIGHLIGHTING = "kodex.highlighting"
 private const val COMPLETION = "kodex.completion"
-
-enum class Mode(val id: String) {
-    K1("k1"),
-    K2("k2"),
-}
 
 sealed class Setting<T> : ObservableMutableProperty<T> {
     abstract val messageBundleName: String
@@ -74,20 +68,6 @@ sealed class EnumSetting<T : Enum<T>> : Setting<T>() {
     }
 }
 
-data object PreprocessorMode : EnumSetting<Mode>() {
-    override val values: EnumEntries<Mode>
-        get() = Mode.entries
-
-    @PropertyKey(resourceBundle = "messages.MessageBundle")
-    override val messageBundleName: String = "mode"
-    override val key: String = MODE
-    override val default: Mode = Mode.K2
-
-    override fun Mode.asString(): String = name
-
-    override fun String.asType(): Mode = Mode.valueOf(this)
-}
-
 data object KodexRenderingIsEnabled : BooleanSetting() {
     @PropertyKey(resourceBundle = "messages.MessageBundle")
     override val messageBundleName: String = "kodexEnabled"
@@ -118,14 +98,12 @@ data object KodexCompletionIsEnabled : BooleanSetting() {
 }
 
 val allSettings: Array<Setting<*>> = arrayOf(
-    PreprocessorMode,
     KodexRenderingIsEnabled,
     KodexInlineRenderingIsEnabled,
     KodexHighlightingIsEnabled,
     KodexCompletionIsEnabled,
 )
 
-var preprocessorMode by PreprocessorMode
 var kodexRenderingIsEnabled by KodexRenderingIsEnabled
 var kodexInlineRenderingIsEnabled by KodexInlineRenderingIsEnabled
 var kodexHighlightingIsEnabled by KodexHighlightingIsEnabled

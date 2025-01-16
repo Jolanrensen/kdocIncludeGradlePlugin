@@ -33,25 +33,6 @@
             icon="/icons/KoDEx-K-toolWindow.svg"
             id="KoDEx Settings"/>
 
-        <!-- K1 kdoc rendering -->
-
-        <documentationProvider
-            implementation="nl.jolanrensen.kodex.documentationProvider.DocProcessorDocumentationProviderK1"
-            id="DocProcessor"
-            order="first"/>
-        <lang.documentationProvider
-            language="kotlin"
-            implementationClass="nl.jolanrensen.kodex.documentationProvider.DocProcessorDocumentationProviderK1"
-            id="DocProcessor"
-            order="first"/>
-        <lang.documentationProvider
-            language="JAVA"
-            implementationClass="nl.jolanrensen.kodex.documentationProvider.DocProcessorDocumentationProviderK1"
-            id="DocProcessorJava"
-            order="first"/>
-
-        <!-- K2 kdoc rendering -->
-
         <platform.backend.documentation.psiTargetProvider
             id="DocProcessorPsiDocumentationTargetProvider"
             order="first"

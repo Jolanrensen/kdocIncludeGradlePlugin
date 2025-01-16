@@ -13,7 +13,7 @@ import nl.jolanrensen.kodex.EnumSetting
 import nl.jolanrensen.kodex.MessageBundle
 import nl.jolanrensen.kodex.allSettings
 import nl.jolanrensen.kodex.getLoadedProcessors
-import nl.jolanrensen.kodex.services.DocProcessorServiceK2
+import nl.jolanrensen.kodex.services.DocProcessorService
 import javax.swing.JComponent
 
 class DocProcessorToolWindowFactory : ToolWindowFactory {
@@ -70,7 +70,7 @@ class DocProcessorToolWindowFactory : ToolWindowFactory {
                     }
 
                     group(MessageBundle.message("loadedPreprocessors")) {
-                        val loadedPreprocessors = DocProcessorServiceK2::class.java.classLoader.getLoadedProcessors()
+                        val loadedPreprocessors = DocProcessorService::class.java.classLoader.getLoadedProcessors()
 
                         if (loadedPreprocessors.isEmpty()) row(MessageBundle.message("noPreprocessorsLoaded")) {}
                         for ((i, preProcessor) in loadedPreprocessors.withIndex()) {

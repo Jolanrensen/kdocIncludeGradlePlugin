@@ -11,14 +11,12 @@ import com.intellij.openapi.editor.markup.GutterIconRenderer
 import com.intellij.openapi.progress.runBlockingCancellable
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.psi.PsiElement
-import nl.jolanrensen.kodex.Mode
 import nl.jolanrensen.kodex.annotations.ExportAsHtml
 import nl.jolanrensen.kodex.documentableWrapper.DocumentableWrapper
 import nl.jolanrensen.kodex.documentableWrapper.getDocContentForHtmlRange
 import nl.jolanrensen.kodex.html.renderToHtml
 import nl.jolanrensen.kodex.kodexRenderingIsEnabled
-import nl.jolanrensen.kodex.preprocessorMode
-import nl.jolanrensen.kodex.services.DocProcessorServiceK2
+import nl.jolanrensen.kodex.services.DocProcessorService
 import nl.jolanrensen.kodex.utils.annotationNames
 import org.jetbrains.kotlin.psi.KtAnnotationEntry
 import org.jetbrains.kotlin.psi.KtDeclaration
@@ -40,7 +38,7 @@ class ExportAsHtmlAnnotator : Annotator {
         override fun getClickAction(): AnAction =
             object : AnAction() {
                 override fun actionPerformed(e: AnActionEvent) {
-                    val service = DocProcessorServiceK2.getInstance(annotation.project)
+                    val service = DocProcessorService.getInstance(annotation.project)
                     val documentableWrapper = service.getDocumentableWrapperOrNull(declaration) ?: return
                     val processedDocumentableWrapper = runBlockingCancellable {
                         service.getProcessedDocumentableWrapperOrNull(documentableWrapper)
@@ -93,7 +91,7 @@ class ExportAsHtmlAnnotator : Annotator {
 
     // we'll count this as "doc processor enabled" and not highlighting, as it
     // needs to actually run the preprocessors itself.
-    private val isEnabled get() = kodexRenderingIsEnabled && preprocessorMode == Mode.K2
+    private val isEnabled get() = kodexRenderingIsEnabled
 
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
         if (!isEnabled) return
