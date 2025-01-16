@@ -1,5 +1,6 @@
 package nl.jolanrensen.kodex.gradle
 
+import kotlinx.coroutines.runBlocking
 import nl.jolanrensen.kodex.RunKodexAction
 import org.gradle.workers.WorkAction
 import org.gradle.workers.WorkParameters
@@ -35,7 +36,9 @@ abstract class RunKodexGradleAction :
 
     override fun execute() {
         try {
-            process()
+            runBlocking {
+                process()
+            }
         } catch (e: Throwable) {
             e.printStackTrace(System.err)
             throw e

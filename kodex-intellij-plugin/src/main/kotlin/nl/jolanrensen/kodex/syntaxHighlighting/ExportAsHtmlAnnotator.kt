@@ -8,6 +8,7 @@ import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.editor.markup.GutterIconRenderer
+import com.intellij.openapi.progress.runBlockingCancellable
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.psi.PsiElement
 import nl.jolanrensen.kodex.Mode
@@ -15,7 +16,7 @@ import nl.jolanrensen.kodex.annotations.ExportAsHtml
 import nl.jolanrensen.kodex.documentableWrapper.DocumentableWrapper
 import nl.jolanrensen.kodex.documentableWrapper.getDocContentForHtmlRange
 import nl.jolanrensen.kodex.html.renderToHtml
-import nl.jolanrensen.kodex.kodexIsEnabled
+import nl.jolanrensen.kodex.kodexRenderingIsEnabled
 import nl.jolanrensen.kodex.preprocessorMode
 import nl.jolanrensen.kodex.services.DocProcessorServiceK2
 import nl.jolanrensen.kodex.utils.annotationNames
@@ -41,8 +42,9 @@ class ExportAsHtmlAnnotator : Annotator {
                 override fun actionPerformed(e: AnActionEvent) {
                     val service = DocProcessorServiceK2.getInstance(annotation.project)
                     val documentableWrapper = service.getDocumentableWrapperOrNull(declaration) ?: return
-                    val processedDocumentableWrapper =
-                        service.getProcessedDocumentableWrapperOrNull(documentableWrapper) ?: return
+                    val processedDocumentableWrapper = runBlockingCancellable {
+                        service.getProcessedDocumentableWrapperOrNull(documentableWrapper)
+                    } ?: return
 
                     val arguments = annotation.getValueArgumentsInParentheses()
 
@@ -91,7 +93,7 @@ class ExportAsHtmlAnnotator : Annotator {
 
     // we'll count this as "doc processor enabled" and not highlighting, as it
     // needs to actually run the preprocessors itself.
-    private val isEnabled get() = kodexIsEnabled && preprocessorMode == Mode.K2
+    private val isEnabled get() = kodexRenderingIsEnabled && preprocessorMode == Mode.K2
 
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
         if (!isEnabled) return

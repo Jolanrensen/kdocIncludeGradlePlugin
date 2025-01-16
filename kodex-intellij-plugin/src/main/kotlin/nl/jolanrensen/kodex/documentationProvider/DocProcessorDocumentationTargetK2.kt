@@ -8,6 +8,7 @@ import com.intellij.lang.documentation.CompositeDocumentationProvider
 import com.intellij.lang.documentation.ExternalDocumentationProvider
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.progress.ProcessCanceledException
+import com.intellij.openapi.progress.runBlockingCancellable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
 import com.intellij.platform.backend.documentation.DocumentationTarget
@@ -22,9 +23,9 @@ import com.intellij.psi.PsiManager
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiTreeUtil.processElements
 import io.ktor.utils.io.CancellationException
+import nl.jolanrensen.kodex.kodexInlineRenderingIsEnabled
 import nl.jolanrensen.kodex.services.DocProcessorServiceK2
 import nl.jolanrensen.kodex.utils.docComment
-import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.Nls
 import org.jetbrains.kotlin.idea.KotlinDocumentationProvider
 import org.jetbrains.kotlin.idea.KotlinLanguage
@@ -68,7 +69,7 @@ class DocProcessorPsiDocumentationTargetProvider : PsiDocumentationTargetProvide
         if (element.navigationElement is KtFile && originalElement?.containingFile is PsiJavaFile) return null
 
         try {
-            val modifiedElement = service.getModifiedElement(element) ?: return null
+            val modifiedElement = runBlockingCancellable { service.getModifiedElement(element) } ?: return null
             val kotlinDocTarget = createKotlinDocumentationTarget(
                 element = modifiedElement,
                 originalElement = originalElement,
@@ -172,8 +173,9 @@ private fun createKotlinDocumentationTarget(element: PsiElement, originalElement
 /**
  * inline, used for rendering single doc comment in file, does not work for multiple, Issue #54,
  * this is handled by [DocProcessorDocumentationProvider].
+ *
+ * TODO slow, runs a lot!
  */
-@ApiStatus.Experimental
 class DocProcessorInlineDocumentationProvider : InlineDocumentationProvider {
 
     init {
@@ -221,7 +223,7 @@ class DocProcessorInlineDocumentationProvider : InlineDocumentationProvider {
         if (file !is KtFile) return emptyList()
 
         val service = getService(file.project)
-        if (!service.isEnabled) return emptyList()
+        if (!service.isEnabled || !kodexInlineRenderingIsEnabled) return emptyList()
 
         try {
             val result = mutableListOf<InlineDocumentation>()
@@ -246,7 +248,7 @@ class DocProcessorInlineDocumentationProvider : InlineDocumentationProvider {
 
     override fun findInlineDocumentation(file: PsiFile, textRange: TextRange): InlineDocumentation? {
         val service = getService(file.project)
-        if (!service.isEnabled) return null
+        if (!service.isEnabled || !kodexInlineRenderingIsEnabled) return null
 
         try {
             val comment = PsiTreeUtil.getParentOfType(
@@ -257,7 +259,7 @@ class DocProcessorInlineDocumentationProvider : InlineDocumentationProvider {
             if (comment.textRange != textRange) return null
 
             val declaration = comment.owner as? KtDeclaration ?: return null
-            val modified = service.getModifiedElement(declaration)
+            val modified = runBlockingCancellable { service.getModifiedElement(declaration) }
 
             if (modified == null) return null
 
@@ -326,7 +328,7 @@ class DocProcessorDocumentationProvider :
         val service = getService(element.project)
         if (!service.isEnabled) return null
         try {
-            val modifiedElement = service.getModifiedElement(element)
+            val modifiedElement = runBlockingCancellable { service.getModifiedElement(element) }
             return kotlin.generateDoc(modifiedElement ?: element, originalElement)
         } catch (_: ProcessCanceledException) {
             return null
@@ -346,7 +348,8 @@ class DocProcessorDocumentationProvider :
         val service = getService(comment.project)
         if (!service.isEnabled) return null
         try {
-            val modifiedElement = service.getModifiedElement(comment.owner ?: return null)
+            val owner = comment.owner ?: return null
+            val modifiedElement = runBlockingCancellable { service.getModifiedElement(owner) }
             return kotlin.generateRenderedDoc(modifiedElement?.docComment ?: comment)
         } catch (_: ProcessCanceledException) {
             return null

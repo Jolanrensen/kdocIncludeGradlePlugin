@@ -355,5 +355,34 @@ fun IntRange.mapToRanges(mapping: (Int) -> Int): List<IntRange> {
     }
 
     ranges.add(start..end) // Add the last range
-    return ranges
+    return ranges.filterNot { it.isEmpty() }
 }
+
+/**
+ * Maps [this] range to one or multiple ranges by removing all numbers that return `true` for [remove].
+ */
+fun IntRange.remove(remove: (Int) -> Boolean): List<IntRange> {
+    if (isEmpty()) return emptyList()
+
+    val ranges = mutableListOf<IntRange>()
+    val iterator = iterator()
+    var start = iterator.next()
+    while (remove(start)) {
+        if (!iterator.hasNext()) return emptyList()
+        start = iterator.next()
+    }
+    var end = start
+
+    for (it in iterator) {
+        if (remove(it)) {
+            ranges.add(start..end)
+            start = it + 1
+        }
+        end = it
+    }
+
+    if (!remove(end)) ranges.add(start..end)
+    return ranges.filterNot { it.isEmpty() }
+}
+
+fun IntRange.remove(vararg ints: Int): List<IntRange> = remove { it in ints }

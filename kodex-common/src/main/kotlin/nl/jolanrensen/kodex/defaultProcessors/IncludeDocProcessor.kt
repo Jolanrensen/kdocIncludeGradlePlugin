@@ -1,5 +1,6 @@
 package nl.jolanrensen.kodex.defaultProcessors
 
+import nl.jolanrensen.kodex.docContent.DocContent
 import nl.jolanrensen.kodex.docContent.asDocContent
 import nl.jolanrensen.kodex.docContent.asDocTextOrNull
 import nl.jolanrensen.kodex.docContent.getDocContent
@@ -14,6 +15,8 @@ import nl.jolanrensen.kodex.documentableWrapper.queryDocumentables
 import nl.jolanrensen.kodex.documentableWrapper.queryDocumentablesForPath
 import nl.jolanrensen.kodex.documentableWrapper.queryFileForDocTextRange
 import nl.jolanrensen.kodex.intellij.CompletionInfo
+import nl.jolanrensen.kodex.intellij.HighlightInfo
+import nl.jolanrensen.kodex.intellij.HighlightType
 import nl.jolanrensen.kodex.processor.TagDocProcessor
 import nl.jolanrensen.kodex.query.DocumentablesByPath
 import nl.jolanrensen.kodex.query.withoutFilters
@@ -22,6 +25,7 @@ import nl.jolanrensen.kodex.utils.getTagArguments
 import org.apache.commons.text.StringEscapeUtils
 import org.jgrapht.traverse.NotDirectedAcyclicGraphException
 import org.jgrapht.traverse.TopologicalOrderIterator
+import kotlin.collections.plusAssign
 
 /**
  * @see IncludeDocProcessor
@@ -317,7 +321,7 @@ class IncludeDocProcessor : TagDocProcessor() {
             documentable = documentable,
         )
 
-    override fun <T : DocumentableWrapper> sortDocumentables(
+    override suspend fun <T : DocumentableWrapper> sortDocumentables(
         documentables: List<T>,
         processLimit: Int,
         documentablesByPath: DocumentablesByPath,
@@ -336,4 +340,86 @@ class IncludeDocProcessor : TagDocProcessor() {
             orderedList.indexOf(doc.identifier)
         }
     }
+
+    override fun getHighlightsForInlineTag(
+        tagName: String,
+        rangeInDocContent: IntRange,
+        docContent: DocContent,
+    ): List<HighlightInfo> =
+        buildList {
+            // Left '{'
+            val leftBracket = buildHighlightInfoWithDescription(
+                rangeInDocContent.first..rangeInDocContent.first,
+                type = HighlightType.BRACKET,
+                tag = tagName,
+            )
+
+            // '@' and tag name
+            this += buildHighlightInfoWithDescription(
+                (rangeInDocContent.first + 1)..(rangeInDocContent.first + 1 + tagName.length),
+                type = HighlightType.TAG,
+                tag = tagName,
+            )
+
+            // Right '}'
+            val rightBracket = buildHighlightInfoWithDescription(
+                rangeInDocContent.last..rangeInDocContent.last,
+                type = HighlightType.BRACKET,
+                tag = tagName,
+            )
+
+            // Linking brackets
+            this += leftBracket.copy(related = listOf(rightBracket))
+            this += rightBracket.copy(related = listOf(leftBracket))
+
+            // [Key]
+            val key = getArgumentHighlightOrNull(
+                argumentIndex = 0,
+                docContent = docContent,
+                rangeInDocContent = rangeInDocContent,
+                tagName = tagName,
+                numberOfArguments = 2,
+                type = HighlightType.TAG_KEY,
+            )
+            if (key != null) this += key
+
+            // background, only include the attributes above
+            this += buildHighlightInfo(
+                rangeInDocContent.first..(key?.ranges?.last()?.last ?: (rangeInDocContent.first + tagName.length)),
+                rangeInDocContent.last..rangeInDocContent.last,
+                type = HighlightType.BACKGROUND,
+                related = listOf(leftBracket, rightBracket),
+            )
+        }
+
+    override fun getHighlightsForBlockTag(
+        tagName: String,
+        rangeInDocContent: IntRange,
+        docContent: DocContent,
+    ): List<HighlightInfo> =
+        buildList {
+            // '@' and tag name
+            this += buildHighlightInfoWithDescription(
+                rangeInDocContent.first..(rangeInDocContent.first + tagName.length),
+                type = HighlightType.TAG,
+                tag = tagName,
+            )
+
+            // [Key]
+            val key = getArgumentHighlightOrNull(
+                argumentIndex = 0,
+                docContent = docContent,
+                rangeInDocContent = rangeInDocContent,
+                tagName = tagName,
+                numberOfArguments = 2,
+                type = HighlightType.TAG_KEY,
+            )
+            if (key != null) this += key
+
+            // background, only include the attributes above
+            this += buildHighlightInfo(
+                rangeInDocContent.first..(key?.ranges?.last()?.last ?: (rangeInDocContent.first + tagName.length)),
+                type = HighlightType.BACKGROUND,
+            )
+        }
 }

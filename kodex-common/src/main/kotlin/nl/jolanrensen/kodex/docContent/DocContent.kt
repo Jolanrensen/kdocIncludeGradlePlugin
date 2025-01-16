@@ -171,12 +171,12 @@ fun DocContent.findInlineTagNamesWithRanges(): List<Pair<String, IntRange>> {
             char == '\\' -> escapeNext = true
 
             char == '{' && value.getOrElse(i + 1) { ' ' } == '@' -> {
-                queue.addLast(i)
+                queue.addFirst(i)
             }
 
             char == '}' -> {
                 if (queue.isNotEmpty()) {
-                    val start = queue.removeLast()
+                    val start = queue.removeFirst()
                     val end = i
                     val depth = queue.size
                     val tag = text.substring(start..end)

@@ -7,6 +7,7 @@ import com.intellij.openapi.diagnostic.debug
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.progress.ProcessCanceledException
+import com.intellij.openapi.progress.runBlockingCancellable
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiDocCommentOwner
 import com.intellij.psi.PsiElement
@@ -25,7 +26,7 @@ import nl.jolanrensen.kodex.exceptions.TagDocProcessorFailedException
 import nl.jolanrensen.kodex.getLoadedProcessors
 import nl.jolanrensen.kodex.getOrigin
 import nl.jolanrensen.kodex.html.renderToHtml
-import nl.jolanrensen.kodex.kodexIsEnabled
+import nl.jolanrensen.kodex.kodexRenderingIsEnabled
 import nl.jolanrensen.kodex.preprocessorMode
 import nl.jolanrensen.kodex.query.DocumentablesByPath
 import nl.jolanrensen.kodex.query.DocumentablesByPathWithCache
@@ -65,7 +66,7 @@ class DocProcessorServiceK1(private val project: Project) {
     /**
      * Determines whether the DocProcessor is enabled or disabled.
      */
-    val isEnabled get() = kodexIsEnabled && preprocessorMode == Mode.K1
+    val isEnabled get() = kodexRenderingIsEnabled && preprocessorMode == Mode.K1
 
     /**
      * Helper function that queries the project for reference links and returns them as a list of DocumentableWrappers.
@@ -137,7 +138,7 @@ class DocProcessorServiceK1(private val project: Project) {
             return null
         }
 
-        val newDocContent = getDocContent(psiElement) ?: return null
+        val newDocContent = runBlockingCancellable { getDocContent(psiElement) } ?: return null
 
         // If the new doc is empty, delete the comment
         if (newDocContent.value.isEmpty()) {
@@ -175,7 +176,7 @@ class DocProcessorServiceK1(private val project: Project) {
         },
     )
 
-    private fun getDocContent(psiElement: PsiElement): DocContent? {
+    private suspend fun getDocContent(psiElement: PsiElement): DocContent? {
         return try {
             // Create a DocumentableWrapper from the element
             val documentableWrapper = DocumentableWrapper.createFromIntellijOrNull(psiElement, useK2 = false)
@@ -267,7 +268,7 @@ class DocProcessorServiceK1(private val project: Project) {
         return file
     }
 
-    private fun processDocumentablesByPath(sourceDocsByPath: DocumentablesByPath): DocumentablesByPath {
+    private suspend fun processDocumentablesByPath(sourceDocsByPath: DocumentablesByPath): DocumentablesByPath {
         // Find all processors
         val processors = getLoadedProcessors().toMutableList()
 

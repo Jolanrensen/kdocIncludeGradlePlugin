@@ -1,8 +1,8 @@
 package nl.jolanrensen.kodex.defaultProcessors
 
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import nl.jolanrensen.kodex.docContent.DocContent
 import nl.jolanrensen.kodex.docContent.asDocContent
 import nl.jolanrensen.kodex.intellij.CompletionInfo
@@ -42,12 +42,12 @@ class RemoveEscapeCharsProcessor : DocProcessor() {
             ),
         )
 
-    override fun process(processLimit: Int, documentablesByPath: DocumentablesByPath): DocumentablesByPath {
-        val mutableDocs = documentablesByPath
-            .toMutable()
-            .withDocsToProcessFilter { it.sourceHasDocumentation }
+    override suspend fun process(processLimit: Int, documentablesByPath: DocumentablesByPath): DocumentablesByPath =
+        coroutineScope {
+            val mutableDocs = documentablesByPath
+                .toMutable()
+                .withDocsToProcessFilter { it.sourceHasDocumentation }
 
-        runBlocking {
             mutableDocs
                 .documentablesToProcess
                 .flatMap { (_, docs) ->
@@ -61,20 +61,27 @@ class RemoveEscapeCharsProcessor : DocProcessor() {
                         }
                     }
                 }.joinAll()
-        }
 
-        return mutableDocs
-    }
+            return@coroutineScope mutableDocs
+        }
 
     override fun getHighlightsFor(docContent: DocContent): List<HighlightInfo> =
         buildList {
             docContent.value
                 .getIndicesOfEscapeChars(escapeChars)
                 .forEach {
-                    this += buildHighlightInfo(
-                        range = it..it,
+                    val bracket = buildHighlightInfoWithDescription(
+                        it..it,
                         type = HighlightType.BRACKET,
                         tag = "\\",
+                    )
+                    this += bracket
+
+                    // background behind this and the escaped character
+                    this += buildHighlightInfo(
+                        it..it + 1,
+                        type = HighlightType.BACKGROUND,
+                        related = listOf(bracket),
                     )
                 }
         }

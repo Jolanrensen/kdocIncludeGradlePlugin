@@ -69,29 +69,28 @@ class CommentDocProcessor : TagDocProcessor() {
     ): List<HighlightInfo> =
         buildList {
             // '{'
-            val leftBracket = buildHighlightInfo(
-                range = rangeInDocContent.first..rangeInDocContent.first,
+            val leftBracket = buildHighlightInfoWithDescription(
+                rangeInDocContent.first..rangeInDocContent.first,
                 type = HighlightType.COMMENT,
                 tag = TAG,
             )
 
             // '@' and tag name
-            this += buildHighlightInfo(
-                range = (rangeInDocContent.first + 1)..(rangeInDocContent.first + 1 + tagName.length),
+            this += buildHighlightInfoWithDescription(
+                (rangeInDocContent.first + 1)..(rangeInDocContent.first + 1 + tagName.length),
                 type = HighlightType.COMMENT_TAG,
                 tag = TAG,
             )
 
             // comment contents
             this += buildHighlightInfo(
-                range = (rangeInDocContent.first + 1 + tagName.length + 1)..rangeInDocContent.last - 1,
+                (rangeInDocContent.first + 1 + tagName.length + 1)..rangeInDocContent.last - 1,
                 type = HighlightType.COMMENT,
-                tag = TAG,
             )
 
             // '}
-            val rightBracket = buildHighlightInfo(
-                range = rangeInDocContent.last..rangeInDocContent.last,
+            val rightBracket = buildHighlightInfoWithDescription(
+                rangeInDocContent.last..rangeInDocContent.last,
                 type = HighlightType.COMMENT,
                 tag = TAG,
             )
@@ -99,6 +98,13 @@ class CommentDocProcessor : TagDocProcessor() {
             // link left and right brackets
             this += leftBracket.copy(related = listOf(rightBracket))
             this += rightBracket.copy(related = listOf(leftBracket))
+
+            // background
+            this += buildHighlightInfo(
+                rangeInDocContent,
+                type = HighlightType.BACKGROUND,
+                related = listOf(leftBracket, rightBracket),
+            )
         }
 
     override fun getHighlightsForBlockTag(
@@ -108,17 +114,22 @@ class CommentDocProcessor : TagDocProcessor() {
     ): List<HighlightInfo> =
         buildList {
             // '@' and tag name
-            this += buildHighlightInfo(
-                range = rangeInDocContent.first..(rangeInDocContent.first + tagName.length),
+            this += buildHighlightInfoWithDescription(
+                rangeInDocContent.first..(rangeInDocContent.first + tagName.length),
                 type = HighlightType.COMMENT_TAG,
                 tag = TAG,
             )
 
             // comment contents
             this += buildHighlightInfo(
-                range = (rangeInDocContent.first + 1 + tagName.length)..rangeInDocContent.last,
+                (rangeInDocContent.first + 1 + tagName.length)..rangeInDocContent.last,
                 type = HighlightType.COMMENT,
-                tag = TAG,
+            )
+
+            // background
+            this += buildHighlightInfo(
+                rangeInDocContent,
+                type = HighlightType.BACKGROUND,
             )
         }
 }

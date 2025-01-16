@@ -44,14 +44,17 @@ abstract class DocProcessor : Serializable {
      * @param documentablesByPath Documentables by path
      * @return modified docs by path
      */
-    protected abstract fun process(processLimit: Int, documentablesByPath: DocumentablesByPath): DocumentablesByPath
+    protected abstract suspend fun process(
+        processLimit: Int,
+        documentablesByPath: DocumentablesByPath,
+    ): DocumentablesByPath
 
     // ensuring each doc processor instance is only run once
     protected var hasRun = false
 
     // ensuring each doc processor instance is only run once
     @Throws(DocProcessorFailedException::class)
-    fun processSafely(processLimit: Int, documentablesByPath: DocumentablesByPath): DocumentablesByPath {
+    suspend fun processSafely(processLimit: Int, documentablesByPath: DocumentablesByPath): DocumentablesByPath {
         if (hasRun) error("This instance of ${this::class.qualifiedName} has already run and cannot be reused.")
 
         return try {
@@ -84,30 +87,51 @@ abstract class DocProcessor : Serializable {
     /**
      * Builds a [HighlightInfo] object with the given parameters in the context of this processor.
      * Fills in [HighlightInfo.tagProcessorName] with the name of this processor.
-     * Builds [HighlightInfo.description] from the [completionInfos] of this processor.
+     *
+     * @see buildHighlightInfoWithDescription
      */
     protected fun buildHighlightInfo(
-        range: IntRange,
+        vararg ranges: IntRange,
         type: HighlightType,
-        tag: String,
-        description: String = completionInfos // get the description from the completion infos
-            .find { it.tag == tag }
-            ?.let {
-                "${
-                    (it.presentableBlockText ?: it.presentableInlineText)
-                        ?.surroundWith("\"")
-                        ?.plus(": ")
-                        ?: ""
-                }${it.tailText}"
-            } ?: "",
+        description: String = "",
         related: List<HighlightInfo> = emptyList(),
     ): HighlightInfo =
         HighlightInfo(
-            range = range,
+            ranges = ranges.toList(),
             type = type,
             related = related,
             description = description,
             tagProcessorName = name,
+        )
+
+    /**
+     * Builds a [HighlightInfo] object with the given parameters in the context of this processor.
+     * Fills in [HighlightInfo.tagProcessorName] with the name of this processor.
+     * Builds [HighlightInfo.description] from the [completionInfos] of this processor.
+     * Mostly used for The @, tag name and brackets.
+     *
+     * @see buildHighlightInfo
+     */
+    protected fun buildHighlightInfoWithDescription(
+        vararg ranges: IntRange,
+        type: HighlightType,
+        tag: String,
+        related: List<HighlightInfo> = emptyList(),
+    ): HighlightInfo =
+        buildHighlightInfo(
+            ranges = ranges,
+            type = type,
+            description = completionInfos // get the description from the completion infos
+                .find { it.tag == tag }
+                ?.let {
+                    "${
+                        (it.presentableBlockText ?: it.presentableInlineText)
+                            ?.surroundWith("\"")
+                            ?.plus(": ")
+                            ?: ""
+                    }${it.tailText}"
+                } ?: "",
+            related = related,
         )
 }
 

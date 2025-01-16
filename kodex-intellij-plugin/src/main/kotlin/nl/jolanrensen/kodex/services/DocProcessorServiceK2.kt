@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalContracts::class)
+
 package nl.jolanrensen.kodex.services
 
 import com.intellij.openapi.components.Service
@@ -12,6 +14,8 @@ import com.intellij.psi.PsiDocCommentOwner
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementFactory
 import com.intellij.psi.PsiPolyVariantReference
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import nl.jolanrensen.kodex.Mode
 import nl.jolanrensen.kodex.createFromIntellijOrNull
 import nl.jolanrensen.kodex.defaultProcessors.IncludeDocProcessor
@@ -23,7 +27,7 @@ import nl.jolanrensen.kodex.documentableWrapper.ProgrammingLanguage
 import nl.jolanrensen.kodex.exceptions.TagDocProcessorFailedException
 import nl.jolanrensen.kodex.getLoadedProcessors
 import nl.jolanrensen.kodex.getOrigin
-import nl.jolanrensen.kodex.kodexIsEnabled
+import nl.jolanrensen.kodex.kodexRenderingIsEnabled
 import nl.jolanrensen.kodex.preprocessorMode
 import nl.jolanrensen.kodex.query.DocumentablesByPath
 import nl.jolanrensen.kodex.query.DocumentablesByPathWithCache
@@ -36,6 +40,9 @@ import org.jetbrains.kotlin.kdoc.psi.impl.KDocName
 import org.jetbrains.kotlin.psi.KtDeclaration
 import org.jetbrains.kotlin.psi.KtElement
 import java.util.concurrent.CancellationException
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.reflect.KType
 import kotlin.reflect.typeOf
 
@@ -57,7 +64,7 @@ class DocProcessorServiceK2(private val project: Project) {
     /**
      * Determines whether the DocProcessor is enabled or disabled.
      */
-    val isEnabled get() = kodexIsEnabled && preprocessorMode == Mode.K2
+    val isEnabled get() = kodexRenderingIsEnabled && preprocessorMode == Mode.K2
 
     fun PsiElement.allChildren(): List<PsiElement> = children.toList() + children.flatMap { it.allChildren() }
 
@@ -154,8 +161,7 @@ class DocProcessorServiceK2(private val project: Project) {
      * If it didn't exist before, it will be created anew. Return `null` means it could not be modified and the original
      * rendering method should be used.
      */
-    @Synchronized
-    fun getModifiedElement(unmodifiedElement: PsiElement): PsiElement? {
+    suspend fun getModifiedElement(unmodifiedElement: PsiElement): PsiElement? {
         // Create a copy of the element, so we can modify it
         val psiElement = try {
             unmodifiedElement.copiedWithFile()
@@ -205,14 +211,33 @@ class DocProcessorServiceK2(private val project: Project) {
         return psiElement
     }
 
-    private val documentableCache = DocumentablesByPathWithCache(
-        processLimit = processLimit,
-        loadedProcessors = getLoadedProcessors(),
-        logDebug = { logger.debug(null, it) },
-        queryNew = { context, link ->
-            query(context.getOrigin(), link)
-        },
-    )
+    /**
+     * Thread/coroutine-safe wrapper around [DocumentablesByPathWithCache] so it
+     * is modified in a thread-safe way.
+     */
+    private inner class CacheHolder {
+        private val mutex = Mutex()
+
+        private val documentableCache = DocumentablesByPathWithCache(
+            processLimit = processLimit,
+            loadedProcessors = getLoadedProcessors(),
+            logDebug = { logger.debug(null, it) },
+            queryNew = { context, link ->
+                query(context.getOrigin(), link)
+            },
+        )
+
+        suspend inline fun <T> withLock(block: suspend (DocumentablesByPathWithCache) -> T): T {
+            contract {
+                callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+            }
+            return mutex.withLock {
+                block(documentableCache)
+            }
+        }
+    }
+
+    private val documentableCacheHolder = CacheHolder()
 
     fun getDocumentableWrapperOrNull(psiElement: PsiElement): DocumentableWrapper? {
         val documentableWrapper = DocumentableWrapper.createFromIntellijOrNull(psiElement, useK2 = true)
@@ -226,47 +251,48 @@ class DocProcessorServiceK2(private val project: Project) {
      * Returns a processed version of the DocumentableWrapper, or `null` if it could not be processed.
      * ([DocumentableWrapper.docContent] contains the modified doc content).
      */
-    fun getProcessedDocumentableWrapperOrNull(documentableWrapper: DocumentableWrapper): DocumentableWrapper? {
-        val needsRebuild = documentableCache.updatePreProcessing(documentableWrapper)
+    suspend fun getProcessedDocumentableWrapperOrNull(documentableWrapper: DocumentableWrapper): DocumentableWrapper? =
+        documentableCacheHolder.withLock { documentableCache ->
+            val needsRebuild = documentableCache.updatePreProcessing(documentableWrapper)
 
-        logger.debug { "\n\n" }
+            logger.debug { "\n\n" }
 
-        if (!needsRebuild) {
+            if (!needsRebuild) {
+                logger.debug {
+                    "loading fully cached ${
+                        documentableWrapper.fullyQualifiedPath
+                    }/${documentableWrapper.fullyQualifiedExtensionPath}"
+                }
+
+                val docContentFromCache = documentableCache.getDocContentResult(documentableWrapper.identifier)
+
+                // should never be null, but just in case
+                if (docContentFromCache != null) {
+                    return documentableWrapper.copy(
+                        docContent = docContentFromCache,
+                        tags = emptySet(),
+                        isModified = true,
+                    )
+                }
+            }
             logger.debug {
-                "loading fully cached ${
+                "preprocessing ${
                     documentableWrapper.fullyQualifiedPath
                 }/${documentableWrapper.fullyQualifiedExtensionPath}"
             }
 
-            val docContentFromCache = documentableCache.getDocContentResult(documentableWrapper.identifier)
+            // Process the DocumentablesByPath
+            val results = processDocumentablesByPath(documentableCache)
 
-            // should never be null, but just in case
-            if (docContentFromCache != null) {
-                return documentableWrapper.copy(
-                    docContent = docContentFromCache,
-                    tags = emptySet(),
-                    isModified = true,
-                )
-            }
-        }
-        logger.debug {
-            "preprocessing ${
-                documentableWrapper.fullyQualifiedPath
-            }/${documentableWrapper.fullyQualifiedExtensionPath}"
+            // Retrieve the original DocumentableWrapper from the results
+            val doc = results[documentableWrapper.identifier] ?: return null
+
+            documentableCache.updatePostProcessing()
+
+            return doc
         }
 
-        // Process the DocumentablesByPath
-        val results = processDocumentablesByPath(documentableCache)
-
-        // Retrieve the original DocumentableWrapper from the results
-        val doc = results[documentableWrapper.identifier] ?: return null
-
-        documentableCache.updatePostProcessing()
-
-        return doc
-    }
-
-    private fun getProcessedDocContent(psiElement: PsiElement): DocContent? {
+    private suspend fun getProcessedDocContent(psiElement: PsiElement): DocContent? {
         return try {
             // Create a DocumentableWrapper from the element
             val documentableWrapper = getDocumentableWrapperOrNull(psiElement)
@@ -303,18 +329,20 @@ class DocProcessorServiceK2(private val project: Project) {
         }
     }
 
-    private fun processDocumentablesByPath(sourceDocsByPath: DocumentablesByPath): DocumentablesByPath {
+    private suspend fun processDocumentablesByPath(
+        sourceDocsByPath: DocumentablesByPathWithCache,
+    ): DocumentablesByPath {
         // Find all processors
         val processors = getLoadedProcessors().toMutableList()
 
         // for cache collecting after include doc processor
         processors.add(
             processors.indexOfFirst { it is IncludeDocProcessor } + 1,
-            PostIncludeDocProcessorCacheCollector(documentableCache),
+            PostIncludeDocProcessorCacheCollector(sourceDocsByPath),
         )
 
         // Run all processors
-        val modifiedDocumentables = processors.fold(sourceDocsByPath) { acc, processor ->
+        val modifiedDocumentables = processors.fold(sourceDocsByPath as DocumentablesByPath) { acc, processor ->
             processor.processSafely(processLimit = processLimit, documentablesByPath = acc)
         }
 

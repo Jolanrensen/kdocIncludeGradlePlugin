@@ -15,7 +15,7 @@ const val TODO_DOC_PROCESSOR = "nl.jolanrensen.kodex.defaultProcessors.TodoDocPr
  * where the docs are missing.
  */
 class TodoDocProcessor : DocProcessor() {
-    override fun process(processLimit: Int, documentablesByPath: DocumentablesByPath): DocumentablesByPath =
+    override suspend fun process(processLimit: Int, documentablesByPath: DocumentablesByPath): DocumentablesByPath =
         documentablesByPath
             .documentablesToProcess
             .map { (path, documentables) ->

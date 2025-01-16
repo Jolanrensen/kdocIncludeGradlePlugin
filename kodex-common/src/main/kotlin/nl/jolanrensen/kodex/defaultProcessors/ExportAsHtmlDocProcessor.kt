@@ -1,8 +1,11 @@
 package nl.jolanrensen.kodex.defaultProcessors
 
+import nl.jolanrensen.kodex.docContent.DocContent
 import nl.jolanrensen.kodex.documentableWrapper.DocumentableWrapper
 import nl.jolanrensen.kodex.documentableWrapper.MutableDocumentableWrapper
 import nl.jolanrensen.kodex.intellij.CompletionInfo
+import nl.jolanrensen.kodex.intellij.HighlightInfo
+import nl.jolanrensen.kodex.intellij.HighlightType
 import nl.jolanrensen.kodex.processor.TagDocProcessor
 import nl.jolanrensen.kodex.utils.getTagNameOrNull
 
@@ -66,7 +69,8 @@ class ExportAsHtmlDocProcessor : TagDocProcessor() {
     ): String {
         val tag = tagWithContent.getTagNameOrNull() ?: return tagWithContent
         updateHtmlRangeInDoc(tag, documentable)
-        return ""
+        val content = tagWithContent.removePrefix("{@$tag").removeSuffix("}")
+        return content
     }
 
     private fun updateHtmlRangeInDoc(tag: String, documentable: DocumentableWrapper) {
@@ -80,5 +84,64 @@ class ExportAsHtmlDocProcessor : TagDocProcessor() {
             EXPORT_AS_HTML_START -> documentable.htmlRangeStart = lineInDoc
             EXPORT_AS_HTML_END -> documentable.htmlRangeEnd = lineInDoc
         }
+    }
+
+    // as the tag keeps the content after it, we need to modify the background highlighting a bit
+    override fun getHighlightsForBlockTag(
+        tagName: String,
+        rangeInDocContent: IntRange,
+        docContent: DocContent
+    ): List<HighlightInfo> = buildList {
+        // '@' and tag name
+        this += buildHighlightInfoWithDescription(
+            rangeInDocContent.first..(rangeInDocContent.first + tagName.length),
+            type = HighlightType.TAG,
+            tag = tagName,
+        )
+
+        // background, only include the attributes above
+        this += buildHighlightInfo(
+            rangeInDocContent.first..(rangeInDocContent.first + tagName.length),
+            type = HighlightType.BACKGROUND,
+        )
+    }
+
+    override fun getHighlightsForInlineTag(
+        tagName: String,
+        rangeInDocContent: IntRange,
+        docContent: DocContent
+    ): List<HighlightInfo> = buildList {
+        // Left '{'
+        val leftBracket = buildHighlightInfoWithDescription(
+            rangeInDocContent.first..rangeInDocContent.first,
+            type = HighlightType.BRACKET,
+            tag = tagName,
+        )
+
+        // '@' and tag name
+        this += buildHighlightInfoWithDescription(
+            (rangeInDocContent.first + 1)..(rangeInDocContent.first + 1 + tagName.length),
+            type = HighlightType.TAG,
+            tag = tagName,
+        )
+
+        // Right '}'
+        val rightBracket = buildHighlightInfoWithDescription(
+            rangeInDocContent.last..rangeInDocContent.last,
+            type = HighlightType.BRACKET,
+            tag = tagName,
+        )
+
+        // Linking brackets
+        this += leftBracket.copy(related = listOf(rightBracket))
+        this += rightBracket.copy(related = listOf(leftBracket))
+
+        // background, only include the attributes above
+        this += buildHighlightInfo(
+            rangeInDocContent.first..(rangeInDocContent.first + 1 + tagName.length),
+                rangeInDocContent.last..rangeInDocContent.last,
+            type = HighlightType.BACKGROUND,
+            related = listOf(leftBracket, rightBracket),
+        )
     }
 }

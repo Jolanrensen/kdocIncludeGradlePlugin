@@ -1,11 +1,16 @@
 package nl.jolanrensen.kodex
 
 import com.intellij.ide.util.PropertiesComponent
+import com.intellij.openapi.Disposable
+import com.intellij.openapi.observable.properties.ObservableMutableProperty
+import com.intellij.openapi.observable.properties.ObservableProperty
+import com.intellij.openapi.observable.util.whenDisposed
 import org.jetbrains.annotations.PropertyKey
 import kotlin.enums.EnumEntries
 
 private const val MODE = "kodex.mode"
-private const val ENABLED = "kodex.enabled"
+private const val RENDERING = "kodex.enabled"
+private const val INLINE_RENDERING = "kodex.inlineEnabled"
 
 private const val HIGHLIGHTING = "kodex.highlighting"
 private const val COMPLETION = "kodex.completion"
@@ -15,43 +20,61 @@ enum class Mode(val id: String) {
     K2("k2"),
 }
 
-sealed interface Setting<T> {
-    val messageBundleName: String
-    val key: String
-    val default: T
+sealed class Setting<T> : ObservableMutableProperty<T> {
+    abstract val messageBundleName: String
+    abstract val key: String
+    abstract val default: T
 
-    fun T.asString(): String
+    abstract fun T.asString(): String
 
-    fun String.asType(): T
+    abstract fun String.asType(): T
 
-    var value: T
-        get() = PropertiesComponent.getInstance().getValue(key, default.asString()).asType()
-        set(value) {
-            PropertiesComponent.getInstance().setValue(key, value.asString())
+    override fun get(): T =
+        PropertiesComponent.getInstance()
+            .getValue(key, default.asString())
+            .asType()
+
+    override fun set(value: T) {
+        PropertiesComponent.getInstance().setValue(key, value.asString())
+        listeners.forEach { it(value) }
+    }
+
+    private val listeners: MutableList<(T) -> Unit> = mutableListOf()
+
+    override fun afterChange(parentDisposable: Disposable?, listener: (T) -> Unit) {
+        parentDisposable?.whenDisposed { listeners.remove(listener) }
+        listeners += listener
+    }
+
+    open val isEnabled: ObservableProperty<Boolean>
+        get() = object : ObservableProperty<Boolean> {
+            override fun get(): Boolean = true
+
+            override fun afterChange(parentDisposable: Disposable?, listener: (Boolean) -> Unit) {}
         }
 
-    operator fun getValue(thisRef: Any?, property: Any?): T = value
-
-    operator fun setValue(thisRef: Any?, property: Any?, value: T) {
-        this.value = value
-    }
+    var value: T
+        get() = get()
+        set(value) {
+            set(value)
+        }
 }
 
-sealed interface BooleanSetting : Setting<Boolean> {
+sealed class BooleanSetting : Setting<Boolean>() {
     override fun Boolean.asString(): String = toString()
 
     override fun String.asType(): Boolean = toBoolean()
 }
 
-sealed interface EnumSetting<T : Enum<T>> : Setting<T> {
-    val values: EnumEntries<T>
+sealed class EnumSetting<T : Enum<T>> : Setting<T>() {
+    abstract val values: EnumEntries<T>
 
     fun setValueAsAny(value: Any) {
         this.value = value as T
     }
 }
 
-data object PreprocessorMode : EnumSetting<Mode> {
+data object PreprocessorMode : EnumSetting<Mode>() {
     override val values: EnumEntries<Mode>
         get() = Mode.entries
 
@@ -65,21 +88,29 @@ data object PreprocessorMode : EnumSetting<Mode> {
     override fun String.asType(): Mode = Mode.valueOf(this)
 }
 
-data object KodexIsEnabled : BooleanSetting {
+data object KodexRenderingIsEnabled : BooleanSetting() {
     @PropertyKey(resourceBundle = "messages.MessageBundle")
     override val messageBundleName: String = "kodexEnabled"
-    override val key: String = ENABLED
+    override val key: String = INLINE_RENDERING
     override val default: Boolean = true
 }
 
-data object KodexHighlightingIsEnabled : BooleanSetting {
+data object KodexInlineRenderingIsEnabled : BooleanSetting() {
+    @PropertyKey(resourceBundle = "messages.MessageBundle")
+    override val messageBundleName: String = "kodexInlineEnabled"
+    override val key: String = RENDERING
+    override val default: Boolean = true
+    override val isEnabled: ObservableProperty<Boolean> = KodexRenderingIsEnabled
+}
+
+data object KodexHighlightingIsEnabled : BooleanSetting() {
     @PropertyKey(resourceBundle = "messages.MessageBundle")
     override val messageBundleName: String = "kodexHighlightingEnabled"
     override val key: String = HIGHLIGHTING
     override val default: Boolean = true
 }
 
-data object KodexCompletionIsEnabled : BooleanSetting {
+data object KodexCompletionIsEnabled : BooleanSetting() {
     @PropertyKey(resourceBundle = "messages.MessageBundle")
     override val messageBundleName: String = "kodexCompletionEnabled"
     override val key: String = COMPLETION
@@ -88,12 +119,14 @@ data object KodexCompletionIsEnabled : BooleanSetting {
 
 val allSettings: Array<Setting<*>> = arrayOf(
     PreprocessorMode,
-    KodexIsEnabled,
+    KodexRenderingIsEnabled,
+    KodexInlineRenderingIsEnabled,
     KodexHighlightingIsEnabled,
     KodexCompletionIsEnabled,
 )
 
 var preprocessorMode by PreprocessorMode
-var kodexIsEnabled by KodexIsEnabled
+var kodexRenderingIsEnabled by KodexRenderingIsEnabled
+var kodexInlineRenderingIsEnabled by KodexInlineRenderingIsEnabled
 var kodexHighlightingIsEnabled by KodexHighlightingIsEnabled
 var kodexCompletionIsEnabled by KodexCompletionIsEnabled
