@@ -4,8 +4,6 @@ import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
 import nl.jolanrensen.kodex.defaultProcessors.IncludeDocProcessor
 import org.intellij.lang.annotations.Language
-import org.junit.jupiter.api.Test
-import kotlin.test.Ignore
 
 class TestInclude : DocProcessorTest("include") {
 
@@ -14,12 +12,10 @@ class TestInclude : DocProcessorTest("include") {
     )
 
     // TODO
-
-    @Test
-    @Ignore
-    fun `Include with and without package kotlin`() = runBlocking {
-        @Language("kt")
-        val file = """
+    fun `Include with and without package kotlin`() =
+        runBlocking {
+            @Language("kt")
+            val file = """
             package com.example.plugin
             
             /**
@@ -32,63 +28,63 @@ class TestInclude : DocProcessorTest("include") {
              * @include [com.example.plugin.helloWorld]  
              */
             fun helloWorld2() {}
-        """.trimIndent()
+            """.trimIndent()
 
-        @Language("kt")
-        val documentationHelloWorld = """
+            @Language("kt")
+            val documentationHelloWorld = """
             /**
              * Hello World!
              */
-        """.trimIndent()
+            """.trimIndent()
 
-        @Language("kt")
-        val documentableSourceNoDocHelloWorld = """
+            @Language("kt")
+            val documentableSourceNoDocHelloWorld = """
                 fun helloWorld() {}
-        """.trimIndent()
+            """.trimIndent()
 
-        val helloWorld = createDocumentableWrapper(
-            documentation = documentationHelloWorld,
-            documentableSourceNoDoc = documentableSourceNoDocHelloWorld,
-            fullyQualifiedPath = "com.example.plugin.helloWorld",
-            docFileTextRange = file.textRangeOf(documentationHelloWorld),
-            fileTextRange = TODO(),
-        )
+            val helloWorld = createDocumentableWrapper(
+                documentation = documentationHelloWorld,
+                documentableSourceNoDoc = documentableSourceNoDocHelloWorld,
+                fullyQualifiedPath = "com.example.plugin.helloWorld",
+                docFileTextRange = file.textRangeOf(documentationHelloWorld),
+                fileTextRange = TODO(),
+            )
 
-        @Language("kt")
-        val documentationHelloWorld2 = """
+            @Language("kt")
+            val documentationHelloWorld2 = """
             /**
              * @include [helloWorld]
              * @include [com.example.plugin.helloWorld]  
              */
-        """.trimIndent()
+            """.trimIndent()
 
-        @Language("kt")
-        val documentableSourceNoDocHelloWorld2 = """
+            @Language("kt")
+            val documentableSourceNoDocHelloWorld2 = """
             fun helloWorld2() {}
-        """.trimIndent()
+            """.trimIndent()
 
-        val helloWorld2 = createDocumentableWrapper(
-            documentation = documentationHelloWorld2,
-            documentableSourceNoDoc = documentableSourceNoDocHelloWorld2,
-            fullyQualifiedPath = "com.example.plugin.helloWorld2",
-            docFileTextRange = file.textRangeOf(documentationHelloWorld2),
-            fileTextRange = TODO(),
-        )
+            val helloWorld2 = createDocumentableWrapper(
+                documentation = documentationHelloWorld2,
+                documentableSourceNoDoc = documentableSourceNoDocHelloWorld2,
+                fullyQualifiedPath = "com.example.plugin.helloWorld2",
+                docFileTextRange = file.textRangeOf(documentationHelloWorld2),
+                fileTextRange = TODO(),
+            )
 
-        @Language("kt")
-        val expectedOutput = """
+            @Language("kt")
+            val expectedOutput = """
             /**
              * Hello World!
              * Hello World! 
              */
-        """.trimIndent()
+            """.trimIndent()
 
-        processContent(
-            documentableWrapper = helloWorld2,
-            processors = processors,
-            additionals = listOf(
-                AdditionalDocumentable(helloWorld),
-            ),
-        ) shouldBe expectedOutput
-    }
+            processContent(
+                documentableWrapper = helloWorld2,
+                processors = processors,
+                additionals = listOf(
+                    AdditionalDocumentable(helloWorld),
+                ),
+            ) shouldBe expectedOutput
+        }
 }

@@ -7,6 +7,7 @@ import nl.jolanrensen.kodex.utils.BACKTICKS
 import nl.jolanrensen.kodex.utils.CURLY_BRACES
 import nl.jolanrensen.kodex.utils.getTagNameOrNull
 import nl.jolanrensen.kodex.utils.removeAllElementsFromLast
+import org.intellij.lang.annotations.Language
 import java.util.SortedMap
 
 /**
@@ -30,6 +31,7 @@ fun String.asDocContent(): DocContent = DocContent(this)
 fun DocContent.getTagNameOrNull(): String? = value.getTagNameOrNull()
 
 /**
+ * a.aaaaaa.aaaaa.aa.aaaa
  * Split doc content in blocks of content and text belonging to tags.
  * The tag, if present, can be found with optional (up to max 2) leading spaces in the first line of the block.
  * You can get the name with [String.getTagNameOrNull].
@@ -229,87 +231,12 @@ private enum class ReferenceState {
     INSIDE_ALIASED_REFERENCE,
 }
 
-fun DocContent.removeKotlinLinks(): DocContent =
-    buildString {
-        val kdoc = this@removeKotlinLinks.value
-        var escapeNext = false
-        var insideCodeBlock = false
-        var referenceState = NONE
-
-        var currentBlock = ""
-
-        fun appendBlock() {
-            append(currentBlock)
-            currentBlock = ""
-        }
-
-        for ((i, char) in kdoc.withIndex()) {
-            fun nextChar(): Char? = kdoc.getOrNull(i + 1)
-
-            fun previousChar(): Char? = kdoc.getOrNull(i - 1)
-
-            when {
-                escapeNext -> {
-                    escapeNext = false
-                    currentBlock += char
-                }
-
-                char == '\\' -> {
-                    escapeNext = true
-                }
-
-                char == '`' -> {
-                    insideCodeBlock = !insideCodeBlock
-                    currentBlock += char
-                }
-
-                insideCodeBlock -> {
-                    currentBlock += char
-                }
-
-                char == '[' -> {
-                    referenceState = when {
-                        previousChar() == ']' -> {
-                            when (referenceState) {
-                                INSIDE_REFERENCE -> INSIDE_ALIASED_REFERENCE
-                                else -> INSIDE_REFERENCE
-                            }
-                        }
-
-                        else -> {
-                            appendBlock()
-                            INSIDE_REFERENCE
-                        }
-                    }
-                }
-
-                char == ']' -> {
-                    if (nextChar() !in listOf('[', '(') || referenceState == INSIDE_ALIASED_REFERENCE) {
-                        referenceState = NONE
-
-                        if (currentBlock.startsWith("**") && currentBlock.endsWith("**")) {
-                            val trimmed = currentBlock.removeSurrounding("**")
-                            currentBlock = "**`$trimmed`**"
-                        } else {
-                            currentBlock = "`$currentBlock`"
-                        }
-
-                        appendBlock()
-                    }
-                }
-
-                referenceState == INSIDE_ALIASED_REFERENCE -> {}
-
-                else -> {
-                    currentBlock += char
-                }
-            }
-        }
-        appendBlock()
-    }
-        .replace("****", "")
-        .replace("``", "")
-        .asDocContent()
+// TODO?
+private enum class CodeBlockState {
+    NONE,
+    INSIDE_CODE_BLOCK_OUTSIDE_REF,
+    INSIDE_CODE_BLOCK_INSIDE_REF,
+}
 
 /**
  * Replace KDoc links in doc content with the result of [process].
@@ -320,8 +247,8 @@ fun DocContent.removeKotlinLinks(): DocContent =
 fun DocContent.replaceKdocLinks(process: (String) -> String): DocContent {
     val kdoc = this.value
     var escapeNext = false
-    var insideCodeBlock = false
     var referenceState = NONE
+    var insideCodeBlock = false
 
     return buildString {
         var currentBlock = ""
@@ -340,29 +267,38 @@ fun DocContent.replaceKdocLinks(process: (String) -> String): DocContent {
                 escapeNext = false
             } else {
                 when (char) {
-                    '\\' -> escapeNext = true
+                    '\\' ->
+                        escapeNext = true
 
-                    '`' -> insideCodeBlock = !insideCodeBlock
+                    '`' ->
+                        if (referenceState != NONE) {
+                            insideCodeBlock = !insideCodeBlock
+                        }
 
-                    '[' -> if (!insideCodeBlock) {
-                        referenceState =
-                            if (previousChar() == ']') {
-                                INSIDE_ALIASED_REFERENCE
-                            } else {
-                                INSIDE_REFERENCE
-                            }
-                        appendCurrentBlock()
-                    }
-
-                    ']' -> if (!insideCodeBlock && nextChar() !in listOf('[', '(')) {
-                        currentBlock = processReference(
-                            referenceState = referenceState,
-                            currentBlock = currentBlock,
-                            process = process,
-                        )
-                        appendCurrentBlock()
+                    '\n', '\r' ->
                         referenceState = NONE
-                    }
+
+                    '[' ->
+                        if (!insideCodeBlock) {
+                            referenceState =
+                                if (previousChar() == ']') {
+                                    INSIDE_ALIASED_REFERENCE
+                                } else {
+                                    INSIDE_REFERENCE
+                                }
+                            appendCurrentBlock()
+                        }
+
+                    ']' ->
+                        if (!insideCodeBlock && nextChar() !in listOf('[', '(')) {
+                            currentBlock = processReference(
+                                referenceState = referenceState,
+                                currentBlock = currentBlock,
+                                process = process,
+                            )
+                            appendCurrentBlock()
+                            referenceState = NONE
+                        }
                 }
             }
             currentBlock += char
@@ -370,6 +306,23 @@ fun DocContent.replaceKdocLinks(process: (String) -> String): DocContent {
         appendCurrentBlock()
     }.asDocContent()
 }
+
+@Language("regexp")
+private const val LETTER = "[\\p{Lu}\\p{Ll}\\p{Lt}\\p{Lm}\\p{Lo}]"
+
+@Language("regexp")
+private const val UNICODE_DIGIT = "\\p{Nd}"
+
+// From https://github.com/Kotlin/kotlin-spec, full regex:
+// (?:[\p{Lu}\p{Ll}\p{Lt}\p{Lm}\p{Lo}]|_)[[\p{Lu}\p{Ll}\p{Lt}\p{Lm}\p{Lo}]_\p{Nd}]*|`[^\r\n`]+`
+@Language("regexp")
+private const val IDENTIFIER =
+    "(?:$LETTER|_)[${LETTER}_$UNICODE_DIGIT]*|`[^\\r\\n`]+`"
+
+// full regex:
+// (?:(?:[\p{Lu}\p{Ll}\p{Lt}\p{Lm}\p{Lo}]|_)[[\p{Lu}\p{Ll}\p{Lt}\p{Lm}\p{Lo}]_\p{Nd}]*|`[^\r\n`]+`)(?:\.(?:(?:[\p{Lu}\p{Ll}\p{Lt}\p{Lm}\p{Lo}]|_)[[\p{Lu}\p{Ll}\p{Lt}\p{Lm}\p{Lo}]_\p{Nd}]*|`[^\r\n`]+`)+)*
+@Language("regexp")
+private const val QUALIFIED_NAME = "(?:$IDENTIFIER)(?:\\.(?:$IDENTIFIER)+)*"
 
 private fun StringBuilder.processReference(
     referenceState: ReferenceState,
@@ -380,7 +333,7 @@ private fun StringBuilder.processReference(
     when (referenceState) {
         INSIDE_REFERENCE -> {
             val originalRef = currentReferenceBlock.removePrefix("[")
-            if (originalRef.startsWith('`') && originalRef.endsWith('`') || ' ' !in originalRef) {
+            if (originalRef matches QUALIFIED_NAME.toRegex()) {
                 val processedRef = process(originalRef)
                 if (processedRef == originalRef) {
                     append("[$originalRef")
@@ -393,7 +346,7 @@ private fun StringBuilder.processReference(
 
         INSIDE_ALIASED_REFERENCE -> {
             val originalRef = currentReferenceBlock.removePrefix("[")
-            if (originalRef.startsWith('`') && originalRef.endsWith('`') || ' ' !in originalRef) {
+            if (originalRef matches QUALIFIED_NAME.toRegex()) {
                 val processedRef = process(originalRef)
                 append("[$processedRef")
                 currentReferenceBlock = ""

@@ -161,6 +161,7 @@ class TestDocContent {
             /**
              * Wrong kdoc
              */
+             fun hello() {}
              
         """.trimIndent().asDocTextOrNull()
 
