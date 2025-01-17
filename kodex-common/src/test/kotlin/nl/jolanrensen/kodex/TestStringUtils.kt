@@ -66,17 +66,21 @@ class TestStringUtils {
         val someText = """
             [H[ello] [World]!
             This is [text][text].
-            It has many lines [NewPath] [Not processed] [Also\].
-            I hope you [like][it] [right?]
+            It has [`many lines`] [NewPath] [Not processed] [Also\].
+            I hope you ```[like][it]``` [right?]
+               - `{@get [Fun]}(NaN|+Inf|-Inf)` is `NaN`
+            `\[ `__`.`__[**`where`**][Update.where]**`  {  `**[`rowValueCondition`][SelectingRows.RowValueCondition.WithExample]**`  }  `**`]`
         """.trimIndent().asDocContent()
 
-        val res = someText.replaceKdocLinks { "NewPath" }
+        val res = someText.replaceKdocLinks { "NewPath.$it" }
 
         res shouldBe """
-            [H[ello][NewPath] [World][NewPath]!
-            This is [text][NewPath].
-            It has many lines [NewPath] [Not processed] [Also\].
-            I hope you [like][NewPath] [right?][NewPath]
+            [H[ello][NewPath.ello] [World][NewPath.World]!
+            This is [text][NewPath.text].
+            It has [`many lines`][NewPath.`many lines`] [NewPath][NewPath.NewPath] [Not processed] [Also\].
+            I hope you ```[like][NewPath.it]``` [right?]
+               - `{@get [Fun][NewPath.Fun]}(NaN|+Inf|-Inf)` is `NaN`
+            `\[ `__`.`__[**`where`**][NewPath.Update.where]**`  {  `**[`rowValueCondition`][NewPath.SelectingRows.RowValueCondition.WithExample]**`  }  `**`]`
         """.trimIndent().asDocContent()
     }
 
