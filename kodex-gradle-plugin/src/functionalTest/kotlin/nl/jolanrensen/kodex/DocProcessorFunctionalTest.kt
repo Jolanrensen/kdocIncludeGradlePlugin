@@ -98,28 +98,25 @@ abstract class DocProcessorFunctionalTest(name: String) {
             mavenLocal()
         }
         
-        val kotlinMainSources = kotlin.sourceSets.main.get().kotlin.sourceDirectories
-        
-        val processKdocMain by creatingRunKodexTask(sources = kotlinMainSources) {
-            
-            dependencies {
+        kodex {
+            preprocess(kotlin.sourceSets.main) {
+                processors = listOf(${processors.joinToString()})
+                dependencies {
                 ${
             if (plugins.isEmpty()) {
                 ""
             } else {
                 """
-                    ${plugins.joinToString("\n") { "plugin(\"$it\")" }}
+                            ${plugins.joinToString("\n") { "plugin(\"$it\")" }}
                 """.trimIndent()
             }
         }
+                }
             }
-           
-            arguments.put(ARG_DOC_PROCESSOR_LOG_NOT_FOUND, false)
-            
-            processors = listOf(${processors.joinToString()})
         }
         
-        tasks.compileKotlin { dependsOn(processKdocMain) }
+        
+        tasks.compileKotlin { dependsOn("preprocessMainKodex") }
         
         tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
             compilerOptions.jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8
@@ -132,7 +129,7 @@ abstract class DocProcessorFunctionalTest(name: String) {
         """.trimIndent()
 
     protected val projectDirectory = File("build/$name")
-    protected val outputDirectory = File(projectDirectory, "build/kodex/processKdocMain")
+    protected val outputDirectory = File(projectDirectory, "build/kodex/mainKodex")
 
     enum class FileLanguage {
         JAVA,
@@ -257,7 +254,7 @@ abstract class DocProcessorFunctionalTest(name: String) {
     private fun runBuild(): BuildResult =
         GradleRunner.create()
             .forwardOutput()
-            .withArguments("processKdocMain")
+            .withArguments("preprocessMainKodex")
             .withProjectDir(projectDirectory)
             .withDebug(true)
             .build()

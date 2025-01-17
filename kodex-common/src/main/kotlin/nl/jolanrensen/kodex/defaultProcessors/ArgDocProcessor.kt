@@ -35,7 +35,7 @@ const val ARG_DOC_PROCESSOR = "nl.jolanrensen.kodex.defaultProcessors.ArgDocProc
 
 /**
  * [Boolean] argument controlling whether to log warnings when an argument is not found.
- * Default is `true`.
+ * Default is `false`.
  */
 const val ARG_DOC_PROCESSOR_LOG_NOT_FOUND = "$ARG_DOC_PROCESSOR.LOG_NOT_FOUND"
 
@@ -188,7 +188,7 @@ class ArgDocProcessor : TagDocProcessor() {
         // We can break out of the recursion if there are no more changes. We don't need to throw an error if an
         // argument is not found, as it might be defined in a different file.
         if (atLeastOneRun && !anyModifications) {
-            val log = arguments[ARG_DOC_PROCESSOR_LOG_NOT_FOUND] as? Boolean ?: true
+            val log = arguments[ARG_DOC_PROCESSOR_LOG_NOT_FOUND] as? Boolean ?: false
             if (log) {
                 val fileTexts = argsNotFound.values
                     .distinctBy { it.doc.file }

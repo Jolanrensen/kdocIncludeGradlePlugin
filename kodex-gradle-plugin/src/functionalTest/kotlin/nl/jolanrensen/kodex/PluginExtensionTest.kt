@@ -56,7 +56,7 @@ class PluginExtensionTest : DocProcessorFunctionalTest("extension") {
         
         class Extension : DocProcessor() {
         
-            override fun process(processLimit: Int, documentablesByPath: DocumentablesByPath): DocumentablesByPath =
+            override suspend fun process(processLimit: Int, documentablesByPath: DocumentablesByPath): DocumentablesByPath =
                 documentablesByPath.documentablesToProcess.map { (path, v) ->
                     path to v.map {
                         it.copy(
