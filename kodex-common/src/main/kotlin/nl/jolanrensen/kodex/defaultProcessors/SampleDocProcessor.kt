@@ -27,7 +27,7 @@ const val SAMPLE_DOC_PROCESSOR = "nl.jolanrensen.kodex.defaultProcessors.SampleD
  *
  * `@sample` will include the code of the target element in the docs entirely.
  *
- * `@sampleNoComments` will include the code of the target element in the docs, but will remove all its comments first.
+ * `@sampleNoComments` will include the code of the target element in the docs, but will remove all its KDocs first.
  *
  * If, in the target, the comments "`// SampleStart`" and "`// SampleEnd`" exist, only the code between those comments
  * will be included.
